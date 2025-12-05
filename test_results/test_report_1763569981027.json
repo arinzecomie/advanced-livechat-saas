@@ -1,0 +1,221 @@
+{
+  "timestamp": "2025-11-19T16:33:01.027Z",
+  "config": {
+    "baseURL": "http://localhost:3000",
+    "apiURL": "http://localhost:3000/api",
+    "socketURL": "http://localhost:3000",
+    "timeout": 10000,
+    "testDuration": 30000,
+    "adminCredentials": {
+      "email": "admin@example.com",
+      "password": "admin123"
+    },
+    "userCredentials": {
+      "email": "demo@example.com",
+      "password": "user123"
+    },
+    "testSiteId": "96f939b0-8d13-4f43-a0d4-675ec750d4bd",
+    "suspendedSiteId": "f977b7b4-064c-4992-9739-ffb55d117932",
+    "expectedResponses": {
+      "healthCheck": {
+        "status": "ok"
+      },
+      "loginSuccess": {
+        "success": true,
+        "token": {}
+      },
+      "visitorRegistration": {
+        "success": true,
+        "data": {
+          "status": "ok"
+        }
+      }
+    }
+  },
+  "results": {
+    "total": 21,
+    "passed": 8,
+    "failed": 13,
+    "errors": [
+      {
+        "timestamp": "2025-11-19T16:33:00.755Z",
+        "message": "Admin Login FAILED"
+      },
+      {
+        "timestamp": "2025-11-19T16:33:00.864Z",
+        "message": "User Login FAILED"
+      },
+      {
+        "timestamp": "2025-11-19T16:33:00.869Z",
+        "message": "Active Site Status FAILED"
+      },
+      {
+        "timestamp": "2025-11-19T16:33:00.874Z",
+        "message": "Suspended Site Status FAILED"
+      },
+      {
+        "timestamp": "2025-11-19T16:33:01.025Z",
+        "message": "Image Upload API FAILED"
+      },
+      {
+        "timestamp": "2025-11-19T16:33:01.025Z",
+        "message": "Geolocation Detection FAILED"
+      },
+      {
+        "timestamp": "2025-11-19T16:33:01.025Z",
+        "message": "Advanced Fingerprinting FAILED"
+      },
+      {
+        "timestamp": "2025-11-19T16:33:01.025Z",
+        "message": "Sound Notifications FAILED"
+      },
+      {
+        "timestamp": "2025-11-19T16:33:01.025Z",
+        "message": "Typing Preview FAILED"
+      },
+      {
+        "timestamp": "2025-11-19T16:33:01.025Z",
+        "message": "Visitor Journey Tracking FAILED"
+      },
+      {
+        "timestamp": "2025-11-19T16:33:01.025Z",
+        "message": "Canned Responses FAILED"
+      },
+      {
+        "timestamp": "2025-11-19T16:33:01.025Z",
+        "message": "Offline Email Form FAILED"
+      },
+      {
+        "timestamp": "2025-11-19T16:33:01.025Z",
+        "message": "Chat Transcripts FAILED"
+      }
+    ],
+    "warnings": [
+      {
+        "timestamp": "2025-11-19T16:33:00.894Z",
+        "message": "Skipping real-time chat tests - no auth token"
+      },
+      {
+        "timestamp": "2025-11-19T16:33:00.894Z",
+        "message": "Skipping dashboard tests - no auth token"
+      },
+      {
+        "timestamp": "2025-11-19T16:33:00.894Z",
+        "message": "Skipping analytics tests - no auth token"
+      }
+    ],
+    "info": [
+      {
+        "timestamp": "2025-11-19T16:33:00.595Z",
+        "message": "PHASE 1: Basic Functionality Tests"
+      },
+      {
+        "timestamp": "2025-11-19T16:33:00.596Z",
+        "message": "Testing health check endpoint..."
+      },
+      {
+        "timestamp": "2025-11-19T16:33:00.643Z",
+        "message": "Testing authentication system..."
+      },
+      {
+        "timestamp": "2025-11-19T16:33:00.864Z",
+        "message": "Testing site status endpoints..."
+      },
+      {
+        "timestamp": "2025-11-19T16:33:00.875Z",
+        "message": "\nPHASE 2: Real-Time Features Tests"
+      },
+      {
+        "timestamp": "2025-11-19T16:33:00.875Z",
+        "message": "Testing widget functionality..."
+      },
+      {
+        "timestamp": "2025-11-19T16:33:00.893Z",
+        "message": "Visitor registered successfully: mi68168s-4"
+      },
+      {
+        "timestamp": "2025-11-19T16:33:00.893Z",
+        "message": "Testing real-time chat functionality..."
+      },
+      {
+        "timestamp": "2025-11-19T16:33:00.894Z",
+        "message": "\nPHASE 3: Dashboard & Analytics Tests"
+      },
+      {
+        "timestamp": "2025-11-19T16:33:00.894Z",
+        "message": "Testing dashboard access..."
+      },
+      {
+        "timestamp": "2025-11-19T16:33:00.894Z",
+        "message": "Testing visitor analytics..."
+      },
+      {
+        "timestamp": "2025-11-19T16:33:00.894Z",
+        "message": "\nPHASE 4: Performance & Security Tests"
+      },
+      {
+        "timestamp": "2025-11-19T16:33:00.894Z",
+        "message": "Testing performance metrics..."
+      },
+      {
+        "timestamp": "2025-11-19T16:33:01.012Z",
+        "message": "Testing security measures..."
+      },
+      {
+        "timestamp": "2025-11-19T16:33:01.025Z",
+        "message": "\nPHASE 5: Advanced Features Tests (Future Implementation)"
+      },
+      {
+        "timestamp": "2025-11-19T16:33:01.025Z",
+        "message": "Testing advanced features (placeholder for new features)..."
+      },
+      {
+        "timestamp": "2025-11-19T16:33:01.025Z",
+        "message": "Testing Image Upload API... (feature not yet implemented)"
+      },
+      {
+        "timestamp": "2025-11-19T16:33:01.025Z",
+        "message": "Testing Geolocation Detection... (feature not yet implemented)"
+      },
+      {
+        "timestamp": "2025-11-19T16:33:01.025Z",
+        "message": "Testing Advanced Fingerprinting... (feature not yet implemented)"
+      },
+      {
+        "timestamp": "2025-11-19T16:33:01.025Z",
+        "message": "Testing Sound Notifications... (feature not yet implemented)"
+      },
+      {
+        "timestamp": "2025-11-19T16:33:01.025Z",
+        "message": "Testing Typing Preview... (feature not yet implemented)"
+      },
+      {
+        "timestamp": "2025-11-19T16:33:01.025Z",
+        "message": "Testing Visitor Journey Tracking... (feature not yet implemented)"
+      },
+      {
+        "timestamp": "2025-11-19T16:33:01.025Z",
+        "message": "Testing Canned Responses... (feature not yet implemented)"
+      },
+      {
+        "timestamp": "2025-11-19T16:33:01.025Z",
+        "message": "Testing Offline Email Form... (feature not yet implemented)"
+      },
+      {
+        "timestamp": "2025-11-19T16:33:01.025Z",
+        "message": "Testing Chat Transcripts... (feature not yet implemented)"
+      }
+    ]
+  },
+  "duration": 431,
+  "passRate": 0.38095238095238093,
+  "overallAssessment": "POOR",
+  "recommendations": [
+    "Review failed tests and fix underlying issues",
+    "Check server logs for detailed error information",
+    "Verify all services are running properly",
+    "Consider implementing formal unit testing frameworks",
+    "Set up continuous integration for automated testing",
+    "Implement monitoring and alerting for production"
+  ]
+}

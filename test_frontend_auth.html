@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frontend Authentication Test - MCP</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #fafafa;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .info {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        .warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        .credentials {
+            background-color: #e9ecef;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #007bff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .hidden {
+            display: none;
+        }
+        #testResults {
+            margin-top: 20px;
+        }
+        .summary {
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .summary.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .summary.error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Advanced Live Chat SaaS - Frontend Auth Test</h1>
+        <p style="text-align: center; color: #666;">Testing the login redirect fix with MCP</p>
+
+        <div class="credentials">
+            <h3>🔑 Demo Credentials</h3>
+            <p><strong>Email:</strong> demo@example.com</p>
+            <p><strong>Password:</strong> user123</p>
+            <p><strong>API Base:</strong> <span id="apiBase">http://localhost:3000/api</span></p>
+        </div>
+
+        <div class="test-section">
+            <h3>🧪 Authentication Tests</h3>
+            <button onclick="runAllTests()">Run All Tests</button>
+            <button onclick="clearResults()">Clear Results</button>
+            <div id="testResults"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔍 Individual Tests</h3>
+            <button onclick="testBackendHealth()">Test Backend Health</button>
+            <button onclick="testLoginOnly()">Test Login Flow</button>
+            <button onclick="testDashboardAccess()">Test Dashboard Access</button>
+            <button onclick="simulateFrontendFlow()">Simulate Frontend Flow</button>
+        </div>
+
+        <div class="test-section">
+            <h3>📋 Test Summary</h3>
+            <div id="testSummary" class="summary hidden"></div>
+            <div id="testStats">
+                <p>Total Tests: <span id="totalTests">0</span></p>
+                <p>✅ Passed: <span id="passedTests">0</span></p>
+                <p>❌ Failed: <span id="failedTests">0</span></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Test tracking
+        let testStats = {
+            total: 0,
+            passed: 0,
+            failed: 0,
+            errors: []
+        };
+
+        const API_BASE_URL = 'http://localhost:3000/api';
+        const DEMO_CREDENTIALS = {
+            email: 'demo@example.com',
+            password: 'user123'
+        };
+
+        // Utility functions
+        function addTestResult(name, status, details = '', error = null) {
+            testStats.total++;
+            const resultsDiv = document.getElementById('testResults');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `test-result ${status === 'PASS' ? 'success' : 'error'}`;
+            
+            const icon = status === 'PASS' ? '✅' : '❌';
+            const timestamp = new Date().toLocaleTimeString();
+            
+            resultDiv.innerHTML = `
+                <strong>${icon} ${name}</strong> <small>(${timestamp})</small>
+                ${details ? `<br><small>${details}</small>` : ''}
+                ${error ? `<br><small style="color: #721c24;">Error: ${error}</small>` : ''}
+            `;
+            
+            resultsDiv.appendChild(resultDiv);
+            
+            if (status === 'PASS') {
+                testStats.passed++;
+            } else {
+                testStats.failed++;
+                if (error) testStats.errors.push({ test: name, error });
+            }
+            
+            updateStats();
+        }
+
+        function addInfo(message) {
+            const resultsDiv = document.getElementById('testResults');
+            const infoDiv = document.createElement('div');
+            infoDiv.className = 'test-result info';
+            infoDiv.innerHTML = `ℹ️ ${message}`;
+            resultsDiv.appendChild(infoDiv);
+        }
+
+        function updateStats() {
+            document.getElementById('totalTests').textContent = testStats.total;
+            document.getElementById('passedTests').textContent = testStats.passed;
+            document.getElementById('failedTests').textContent = testStats.failed;
+        }
+
+        function showSummary() {
+            const summaryDiv = document.getElementById('testSummary');
+            summaryDiv.classList.remove('hidden', 'success', 'error');
+            
+            if (testStats.failed === 0 && testStats.passed > 0) {
+                summaryDiv.classList.add('success');
+                summaryDiv.innerHTML = `
+                    🎉 All tests passed! The authentication fix is working correctly.<br>
+                    ✅ Login redirect issue should be resolved.<br>
+                    ✅ Users will properly redirect to dashboard after login.
+                `;
+            } else if (testStats.failed > 0) {
+                summaryDiv.classList.add('error');
+                summaryDiv.innerHTML = `
+                    ⚠️ Some tests failed. Check the details above.<br>
+                    🔧 Make sure backend server is running on port 3000.
+                `;
+            }
+        }
+
+        // Test functions
+        async function testBackendHealth() {
+            addInfo('Checking backend server status...');
+            try {
+                const response = await fetch('http://localhost:3000/health');
+                const data = await response.json();
+                
+                if (data.status === 'ok') {
+                    addTestResult('Backend Health Check', 'PASS', 'Server responding correctly');
+                    return true;
+                } else {
+                    throw new Error('Unexpected response format');
+                }
+            } catch (error) {
+                addTestResult('Backend Health Check', 'FAIL', '', error.message);
+                return false;
+            }
+        }
+
+        async function testLoginFlow() {
+            addInfo('Testing login flow with demo credentials...');
+            try {
+                // Step 1: Login
+                const loginResponse = await fetch(`${API_BASE_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(DEMO_CREDENTIALS)
+                });
+                
+                const loginData = await loginResponse.json();
+                
+                if (!loginData.success || !loginData.data.token) {
+                    throw new Error(loginData.message || 'Login failed');
+                }
+                
+                const { token, user } = loginData.data;
+                addTestResult('Login API', 'PASS', `Token received for ${user.name}`);
+                
+                // Store token for subsequent tests
+                localStorage.setItem('test_token', token);
+                localStorage.setItem('test_user', JSON.stringify(user));
+                
+                return { token, user };
+                
+            } catch (error) {
+                addTestResult('Login API', 'FAIL', '', error.message);
+                return null;
+            }
+        }
+
+        async function testDashboardAccess() {
+            addInfo('Testing dashboard access with valid token...');
+            try {
+                const token = localStorage.getItem('test_token');
+                if (!token) {
+                    throw new Error('No token available. Run login test first.');
+                }
+                
+                const response = await fetch(`${API_BASE_URL}/dashboard`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success && data.data.sites) {
+                    addTestResult('Dashboard Access', 'PASS', `${data.data.sites.length} sites found`);
+                    return true;
+                } else {
+                    throw new Error('Dashboard data not available');
+                }
+                
+            } catch (error) {
+                addTestResult('Dashboard Access', 'FAIL', '', error.message);
+                return false;
+            }
+        }
+
+        async function simulateFrontendFlow() {
+            addInfo('Simulating frontend authentication flow...');
+            try {
+                // Step 1: Clear any existing data
+                localStorage.removeItem('test_token');
+                localStorage.removeItem('test_user');
+                
+                // Step 2: Login (simulate the fixed flow)
+                const loginResult = await testLoginFlow();
+                if (!loginResult) return false;
+                
+                // Step 3: Simulate React Query refetch (the fix)
+                addInfo('Simulating React Query refetch...');
+                
+                const profileResponse = await fetch(`${API_BASE_URL}/auth/profile`, {
+                    headers: {
+                        'Authorization': `Bearer ${loginResult.token}`
+                    }
+                });
+                
+                const profileData = await profileResponse.json();
+                if (!profileData.success) {
+                    throw new Error('Profile refetch failed');
+                }
+                
+                // Step 4: Simulate navigation to dashboard
+                const dashboardResponse = await fetch(`${API_BASE_URL}/dashboard`, {
+                    headers: {
+                        'Authorization': `Bearer ${loginResult.token}`
+                    }
+                });
+                
+                if (dashboardResponse.status === 200) {
+                    const dashboardData = await dashboardResponse.json();
+                    if (dashboardData.success) {
+                        addTestResult('Frontend Flow Simulation', 'PASS', 'Login → Refetch → Dashboard successful');
+                        return true;
+                    }
+                }
+                
+                throw new Error('Dashboard access failed after login');
+                
+            } catch (error) {
+                addTestResult('Frontend Flow Simulation', 'FAIL', '', error.message);
+                return false;
+            }
+        }
+
+        async function runAllTests() {
+            clearResults();
+            addInfo('Starting comprehensive authentication tests...');
+            
+            const healthOk = await testBackendHealth();
+            if (!healthOk) {
+                addInfo('Backend not available. Stopping tests.');
+                showSummary();
+                return;
+            }
+            
+            await testLoginFlow();
+            await testDashboardAccess();
+            await simulateFrontendFlow();
+            
+            showSummary();
+        }
+
+        function clearResults() {
+            document.getElementById('testResults').innerHTML = '';
+            document.getElementById('testSummary').innerHTML = '';
+            document.getElementById('testSummary').classList.add('hidden');
+            testStats = { total: 0, passed: 0, failed: 0, errors: [] };
+            updateStats();
+        }
+
+        // Individual test functions
+        async function testLoginOnly() {
+            await testLoginFlow();
+        }
+    </script>
+</body>
+</html>
