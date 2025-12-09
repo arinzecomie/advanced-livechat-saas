@@ -1,0 +1,53 @@
+# 🐘 PostgreSQL-Only Docker Configuration
+# Forces PostgreSQL usage, removes SQLite fallback
+
+FROM node:18-alpine
+
+# Install PostgreSQL client for connection testing
+RUN apk add --no-cache postgresql-client
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+COPY backend/package*.json ./backend/
+COPY frontend/package*.json ./frontend/
+
+# Install dependencies (PostgreSQL only)
+RUN npm ci --only=production && \
+    cd backend && npm ci --only=production && \
+    cd ../frontend && npm ci --only=production
+
+# Build frontend
+COPY frontend ./frontend
+RUN cd frontend && npm run build
+
+# Copy backend and configuration
+COPY backend ./backend
+COPY *.js ./
+COPY *.json ./
+COPY railway-postgresql-start.js ./
+
+# Create logs directory
+RUN mkdir -p logs
+
+# Create non-root user
+RUN addgroup -g 1001 -S nodejs
+RUN adduser -S nextjs -u 1001
+
+# Set ownership
+RUN chown -R nextjs:nodejs /app
+
+# Switch to non-root user
+USER nextjs
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD node -e "require('https').get(process.env.RAILWAY_PUBLIC_DOMAIN ? 'https://' + process.env.RAILWAY_PUBLIC_DOMAIN + '/health' : 'http://localhost:' + (process.env.PORT || 3000) + '/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) }).on('error', () => process.exit(1))"
+
+# Expose port
+EXPOSE 3000
+
+# Start application
+CMD ["node", "railway-postgresql-start.js"]

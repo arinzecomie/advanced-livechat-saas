@@ -645,13 +645,13 @@ const SuperAdminDashboard = () => {
                 </Card.Header>
                 <Card.Body>
                   <div className="d-grid gap-2">
-                    <Button variant="success" size="sm" onClick={() => setSelectedUser({}); setShowUserModal(true)}>
+                    <Button variant="success" size="sm" onClick={() => { setSelectedUser({}); setShowUserModal(true); }}>
                       Grant Lifetime Access
                     </Button>
-                    <Button variant="info" size="sm" onClick={() => setSelectedUser({}); setShowUserModal(true)}>
+                    <Button variant="info" size="sm" onClick={() => { setSelectedUser({}); setShowUserModal(true); }}>
                       Extend Free Trial
                     </Button>
-                    <Button variant="warning" size="sm" onClick={() => setSelectedUser({}); setShowUserModal(true)}>
+                    <Button variant="warning" size="sm" onClick={() => { setSelectedUser({}); setShowUserModal(true); }}>
                       Force Downgrade
                     </Button>
                   </div>

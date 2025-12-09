@@ -1,0 +1,248 @@
+
+PS C:\Users\Kizito\livechatwithreact\advanced-livechat-saas> railway up
+  Indexed                                                                                                                 Compressed [====================] 100%                                                                                  Uploaded                                                                                                                Build Logs: https://railway.com/project/c66a41be-9633-4791-a1c0-188ce1b5ec0b/service/4553cba6-6121-4b1c-8c69-153db4ce34dd?id=8a48ddfe-189d-4693-82e6-198bd5756dba&
+Failed to stream build logs: Failed to retrieve build log
+PS C:\Users\Kizito\livechatwithreact\advanced-livechat-saas> railway logs
+Starting Container
+🚀 Starting Advanced Live Chat SaaS for Railway...
+📋 Configuration:
+  PORT: 3000
+> advanced-livechat-saas@1.0.0 start:railway
+
+> node railway-final-start.js
+
+  NODE_ENV: production
+  MONGO_URI: SET (hidden)
+📁 Current working directory: /app
+📂 Directory contents: [
+  'backend',
+  'deploy.js',
+  'ecosystem.config.js',
+  'fix-railway-db.js',
+  'frontend',
+  'logs',
+  'node_modules',
+  'package-lock.json',
+  'package.json',
+  'railway-final-start.js',
+  'railway-startup.js',
+  'single-url-deploy-improved.js'
+]
+🔍 Checking path: /app/frontend/dist
+✅ Frontend found at: /app/frontend/dist
+✅ Using frontend at: /app/frontend/dist
+✅ Frontend is built
+🔧 Running database fix...
+DB FIX: 🚂 Railway Database Fix - Direct Execution
+  - routes
+  - middlewares
+  - migrations
+  - models
+  - node_modules
+  - single-url-deploy-improved.js
+  - package-lock.json
+📁 Backend directory contents:
+  - package.json
+DB FIX: - .env.example
+  - README_BACKEND.md
+  - check-mongo-simple.js
+  - config
+DB FIX: - controllers
+DB FIX: - db-fix-endpoint.js
+  - knexfile-fixed.js
+  - knexfile-postgresql.js
+  - knexfile.js
+DB FIX: 📅 Timestamp: 2025-12-09T07:55:12.476Z
+📁 Working directory: /app
+DB FIX: 📂 Directory contents:
+  - backend
+  - deploy.js
+  - ecosystem.config.js
+  - fix-railway-db.js
+  - frontend
+DB FIX: - logs
+  - node_modules
+  - package-lock.json
+  - package.json
+  - railway-final-start.js
+  - railway-startup.js
+  - seeds
+  - server-fixed.js
+  - server-single-url.js
+  - server.js
+  - server_optimized.js
+  - services
+  - test-mongo-quick.js
+  - test-mongodb-complete.js
+  - test-mongodb.js
+  - utils
+📄 Database path: /app/backend/dev.sqlite3
+❌ Database file does not exist, will create
+
+🚀 Executing database fix...
+DB FIX: 🔧 Starting database fix...
+📊 Checking current tables...
+DB FIX: ✅ Connected to SQLite database
+DB FIX: Current tables: []
+❌ Users table missing, will create
+
+🔨 Creating users table...
+DB FIX: ✅ SQL executed successfully
+DB FIX: Rows affected: 0
+
+🔨 Creating sites table...
+DB FIX: ✅ SQL executed successfully
+   Rows affected: 0
+DB FIX: 🔨 Creating visitors table...
+DB FIX: ✅ SQL executed successfully
+DB FIX: Rows affected: 0
+
+🔨 Creating payments table...
+DB FIX: ✅ SQL executed successfully
+DB FIX: Rows affected: 0
+
+👤 Inserting default admin user...
+DB FIX: ✅ SQL executed successfully
+DB FIX: Rows affected: 1
+
+👤 Inserting demo user...
+DB FIX: ✅ SQL executed successfully
+   Rows affected: 1
+DB FIX: 🌐 Inserting default sites...
+DB FIX: ✅ SQL executed successfully
+DB FIX: Rows affected: 2
+
+✅ Verifying final data...
+DB FIX: 📊 Final results:
+   Users count: 2
+   Sites count: 2
+DB FIX: Admin user: {
+  id: 1,
+  email: 'admin@example.com',
+  name: 'Admin User',
+  role: 'admin'
+}
+
+🎉 Database fix completed successfully!
+✅ Admin login should now work:
+   Email: admin@example.com
+DB FIX: Password: admin123
+
+🎉 SUCCESS: Database has been fixed!
+🧪 You can now test the login with:
+   Email: admin@example.com
+   Password: admin123
+Database fix exited with code 0
+🎯 Starting backend server from: /app/backend/server.js
+SERVER: ✅ sites table exists
+SERVER: ✅ visitors table exists
+SERVER: ✅ payments table exists
+SERVER: 👤 Inserting default SQLite users...
+SERVER ERROR: ❌ Failed to parse DATABASE_URL: parse is not defined
+✅ Server appears to be running
+SERVER: 🎯 Demo page: http://localhost:3000/demo.html
+SERVER ERROR: ❌ Database connection failed for models: parse is not defined
+SERVER: 💾 Falling back to SQLite for models...
+SERVER: ✅ SQLite database connected
+SERVER: 🔧 Initializing SQLite database...
+SERVER: 🔧 Database configured for production environment
+SERVER: 📊 Current tables: [ 'users', 'sqlite_sequence', 'sites', 'visitors', 'payments' ]
+SERVER: ✅ SQLite fallback loaded for models
+SERVER: 🐘 Using PostgreSQL connection
+SERVER: ✅ users table exists
+✅ Database provider initialized with sqlite
+SERVER: 🔄 Connecting to MongoDB...
+SERVER: 🚀 Advanced Live Chat SaaS server running on port 3000
+SERVER: 🐘 Attempting PostgreSQL connection for models...
+📊 Dashboard: http://localhost:3000/dashboard
+SERVER: ✅ Default SQLite users inserted
+SERVER: 🎉 SQLite initialization completed!
+SERVER: [2025-12-09T07:55:14.325Z] GET /health
+SERVER: ✅ MongoDB connected successfully to Atlas!
+📊 Database: advanced-livechat
+SERVER: ✅ MongoDB connection verified
+🔧 Creating indexes...
+SERVER: ✅ Indexes created successfully
+SERVER: 📋 MongoDB Version: 8.0.16
+🏠 Host: ac-xgidsaq-shard-00-02.tjk5ezx.mongodb.net:27017
+SERVER: [2025-12-09T07:55:18.736Z] GET /health
+✅ Health check passed: {
+  status: 'ok',
+  timestamp: '2025-12-09T07:55:18.737Z',
+  database: 'sqlite',
+  mongodb: 'configured'
+}
+🎉 Application ready at http://localhost:3000
+🌐 Health endpoint: http://localhost:3000/health
+SERVER: [2025-12-09T07:55:46.714Z] GET /health
+SERVER ERROR: ❌ JSON Parse Error: {
+  message: 'Unexpected token e in JSON at position 1',
+  body: '{email:admin@example.com,password:admin123}',
+  path: '/api/auth/login',
+  method: 'POST',
+  headers: {
+    host: 'talkavax-production.up.railway.app',
+    'user-agent': 'curl/8.0.1',
+    'content-length': '43',
+    accept: '*/*',
+    'content-type': 'application/json',
+    'x-forwarded-for': '102.90.80.143',
+    'x-forwarded-host': 'talkavax-production.up.railway.app',
+    'x-forwarded-proto': 'https',
+    'x-railway-edge': 'railway/europe-west4-drams3a',
+    'x-railway-request-id': 'S2Cmb5yaRJ2WO69Lm3z_FQ',
+    'x-real-ip': '102.90.80.143',
+    'x-request-start': '1765266999787',
+    'accept-encoding': 'gzip'
+  }
+}
+    'x-real-ip': '102.90.80.143',
+    'x-request-start': '1765267721171',
+    'accept-encoding': 'gzip'
+  }
+}
+SERVER ERROR: ❌ JSON Parse Error: {
+  message: 'Unexpected token e in JSON at position 1',
+  body: '{email:admin@example.com,password:admin123}',
+  path: '/api/auth/login',
+  method: 'POST',
+  headers: {
+    host: 'talkavax-production.up.railway.app',
+    'user-agent': 'curl/8.0.1',
+    'content-length': '43',
+    accept: '*/*',
+    'content-type': 'application/json',
+    'x-forwarded-for': '102.90.80.143',
+    'x-forwarded-host': 'talkavax-production.up.railway.app',
+    'x-forwarded-proto': 'https',
+    'x-railway-edge': 'railway/europe-west4-drams3a',
+    'x-railway-request-id': '_gxxxy9yRpG6iU_arJsmnA',
+SERVER: [2025-12-09T08:09:43.757Z] GET /health
+SERVER ERROR: ❌ JSON Parse Error: {
+  message: "Unexpected token ' in JSON at position 0",
+  body: "'{email:admin@example.com,password:admin123}'",
+  path: '/api/auth/login',
+  method: 'POST',
+  headers: {
+    host: 'talkavax-production.up.railway.app',
+    'user-agent': 'curl/8.0.1',
+    'content-length': '45',
+    accept: '*/*',
+    'content-type': 'application/json',
+    'x-forwarded-for': '102.90.80.143',
+    'x-forwarded-host': 'talkavax-production.up.railway.app',
+    'x-forwarded-proto': 'https',
+    'x-railway-edge': 'railway/europe-west4-drams3a',
+    'x-railway-request-id': 'CUg8IDolTsKe4CyeN8N_Fg',
+    'x-real-ip': '102.90.80.143',
+    'x-request-start': '1765267962127',
+    'accept-encoding': 'gzip'
+  }
+}
+SERVER: [2025-12-09T08:12:50.587Z] POST /api/auth/login
+📋 Content-Type: application/json
+📏 Content-Length: 51
+SERVER: [2025-12-09T08:17:04.012Z] GET /health
+SERVER: [2025-12-09T08:29:56.762Z] POST /api/auth/login
+📋 Content-Type: application/json
+📏 Content-Length: 51

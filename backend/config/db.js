@@ -1,20 +1,91 @@
 /**
- * Database configuration - Knex instance for SQLite
- * Provides SQL database connection for users, sites, payments, visitors
+ * 🐘 PostgreSQL Database Configuration
+ * Forces PostgreSQL usage, removes SQLite fallback
  */
+
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 import knex from 'knex';
-import knexConfig from '../knexfile.js';
+import dotenv from 'dotenv';
 
+// Load environment variables
+dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// Parse database URL for PostgreSQL
+const parseDatabaseUrl = (databaseUrl) => {
+  if (!databaseUrl) {
+    throw new Error('DATABASE_URL is required for PostgreSQL configuration');
+  }
+  
+  try {
+    const url = new URL(databaseUrl);
+    return {
+      user: url.username,
+      password: url.password,
+      host: url.hostname,
+      port: url.port || 5432,
+      database: url.pathname.slice(1), // Remove leading slash
+      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+    };
+  } catch (error) {
+    console.error('❌ Failed to parse DATABASE_URL:', error.message);
+    throw error;
+  }
+};
+
+// Database configuration - PostgreSQL only
+const config = {
+  development: {
+    client: 'postgresql',
+    connection: process.env.DATABASE_URL ? parseDatabaseUrl(process.env.DATABASE_URL) : {
+      host: process.env.PGHOST || 'localhost',
+      port: process.env.PGPORT || 5432,
+      database: process.env.PGDATABASE || 'advanced_livechat_dev',
+      user: process.env.PGUSER || 'postgres',
+      password: process.env.PGPASSWORD || 'password',
+      ssl: false
+    },
+    migrations: {
+      directory: join(__dirname, 'migrations'),
+      extension: 'js',
+      tableName: 'knex_migrations'
+    },
+    seeds: {
+      directory: join(__dirname, 'seeds'),
+      extension: 'js'
+    },
+    pool: {
+      min: 2,
+      max: 10
+    }
+  },
+
+  production: {
+    client: 'postgresql',
+    connection: parseDatabaseUrl(process.env.DATABASE_URL),
+    migrations: {
+      directory: join(__dirname, 'migrations'),
+      extension: 'js',
+      tableName: 'knex_migrations'
+    },
+    seeds: {
+      directory: join(__dirname, 'seeds'),
+      extension: 'js'
+    },
+    pool: {
+      min: 2,
+      max: 20
+    }
+  }
+};
+
+// Create and export database instance
 const environment = process.env.NODE_ENV || 'development';
-const config = knexConfig[environment];
+const db = knex(config[environment]);
 
-const db = knex(config);
-
-// Test connection
-db.raw('SELECT 1').then(() => {
-  console.log('✅ SQLite database connected');
-}).catch(err => {
-  console.error('❌ Database connection failed:', err);
-});
+console.log(`🔧 PostgreSQL configured for ${environment} environment`);
 
 export default db;

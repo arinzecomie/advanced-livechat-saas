@@ -4,10 +4,13 @@
  */
 import bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
-import db from '../config/db.js';
+import { getDatabase } from '../config/database-provider.js';
 
 export async function seed() {
   console.log('🌱 Seeding initial data...');
+  
+  // Get database instance
+  const db = getDatabase();
   
   // Create admin user
   const adminPassword = await bcrypt.hash('admin123', 10);
