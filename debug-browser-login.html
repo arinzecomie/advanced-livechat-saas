@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Browser Login Flow</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 1200px; 
+            margin: 0 auto; 
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 10px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .debug-section { 
+            margin: 20px 0; 
+            padding: 15px; 
+            border: 1px solid #ddd; 
+            border-radius: 5px;
+            background-color: #fafafa;
+        }
+        .success { 
+            color: #28a745; 
+            font-weight: bold;
+            background-color: #d4edda;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .error { 
+            color: #dc3545; 
+            font-weight: bold;
+            background-color: #f8d7da;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .info { 
+            color: #17a2b8; 
+            background-color: #d1ecf1;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .warning { 
+            color: #856404; 
+            background-color: #fff3cd;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .log-entry {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            margin: 2px 0;
+            padding: 5px;
+            background-color: #f8f9fa;
+            border-left: 3px solid #007bff;
+        }
+        .network-request {
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            margin: 2px 0;
+            padding: 5px;
+            background-color: #e9ecef;
+            border-left: 3px solid #28a745;
+        }
+        .network-error {
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            margin: 2px 0;
+            padding: 5px;
+            background-color: #f8d7da;
+            border-left: 3px solid #dc3545;
+        }
+        #debug-log {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            background-color: #f8f9fa;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+        .token-display {
+            word-break: break-all;
+            font-size: 10px;
+            background-color: #f8f9fa;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Debug Browser Login Flow</h1>
+        <p>This page helps debug the actual browser behavior during login to identify why the redirect issue persists.</p>
+        
+        <div class="debug-section">
+            <h3>Step 1: Check Current Authentication State</h3>
+            <button onclick="checkAuthState()">Check Auth State</button>
+            <button onclick="clearLocalStorage()">Clear Local Storage</button>
+            <div id="auth-state"></div>
+        </div>
+        
+        <div class="debug-section">
+            <h3>Step 2: Monitor Network Requests</h3>
+            <button onclick="startNetworkMonitoring()">Start Network Monitor</button>
+            <button onclick="stopNetworkMonitoring()">Stop Network Monitor</button>
+            <button onclick="clearNetworkLog()">Clear Log</button>
+            <div id="network-log" style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; background-color: #f8f9fa;"></div>
+        </div>
+        
+        <div class="debug-section">
+            <h3>Step 3: Test Login Process</h3>
+            <button onclick="testLoginProcess()">Test Complete Login Process</button>
+            <button onclick="testTokenValidation()">Test Token Validation</button>
+            <div id="login-results"></div>
+        </div>
+        
+        <div class="debug-section">
+            <h3>Step 4: Simulate Frontend Behavior</h3>
+            <button onclick="simulateFrontendLogin()">Simulate Frontend Login Flow</button>
+            <button onclick="simulateDashboardRedirect()">Simulate Dashboard Redirect</button>
+            <div id="simulation-results"></div>
+        </div>
+        
+        <div class="debug-section">
+            <h3>Step 5: Open Real Login Page</h3>
+            <button onclick="openRealLoginPage()">Open Real Login Page</button>
+            <div id="real-results"></div>
+        </div>
+        
+        <div class="debug-section">
+            <h3>Debug Log</h3>
+            <button onclick="clearDebugLog()">Clear Debug Log</button>
+            <div id="debug-log"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://talkavax-production.up.railway.app';
+        let currentToken = localStorage.getItem('token');
+        let networkMonitorActive = false;
+
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('debug-log');
+            const timestamp = new Date().toLocaleTimeString();
+            const color = type === 'error' ? '#dc3545' : type === 'success' ? '#28a745' : '#007bff';
+            
+            logDiv.innerHTML += `
+                <div class="log-entry" style="border-left-color: ${color};">
+                    [${timestamp}] ${message}
+                </div>
+            `;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function checkAuthState() {
+            log('Checking authentication state...');
+            const resultsDiv = document.getElementById('auth-state');
+            
+            try {
+                // Check localStorage
+                const token = localStorage.getItem('token');
+                const user = localStorage.getItem('user');
+                
+                log(`Token in localStorage: ${token ? 'EXISTS' : 'NOT FOUND'}`);
+                log(`User in localStorage: ${user ? 'EXISTS' : 'NOT FOUND'}`);
+                
+                if (token) {
+                    currentToken = token;
+                    log('Token found, attempting to decode...');
+                    
+                    try {
+                        // Decode JWT token (without verification)
+                        const payload = JSON.parse(atob(token.split('.')[1]));
+                        log(`Token payload: ${JSON.stringify(payload, null, 2)}`);
+                        
+                        // Check token expiration
+                        const now = Math.floor(Date.now() / 1000);
+                        const isExpired = payload.exp < now;
+                        log(`Token expiration: ${isExpired ? 'EXPIRED' : 'VALID'} (exp: ${new Date(payload.exp * 1000).toLocaleString()})`);
+                        
+                        resultsDiv.innerHTML = `
+                            <div class="${isExpired ? 'warning' : 'success'}">
+                                <strong>Authentication State:</strong><br>
+                                Token: ${token.substring(0, 50)}...<br>
+                                User ID: ${payload.id}<br>
+                                Email: ${payload.email}<br>
+                                Role: ${payload.role}<br>
+                                Expires: ${new Date(payload.exp * 1000).toLocaleString()}<br>
+                                Status: ${isExpired ? 'EXPIRED' : 'VALID'}
+                            </div>
+                        `;
+                        
+                        if (isExpired) {
+                            log('Token is expired, this might cause redirect issues', 'warning');
+                        }
+                        
+                    } catch (decodeError) {
+                        log(`Failed to decode token: ${decodeError.message}`, 'error');
+                        resultsDiv.innerHTML = `<div class="error">Invalid token format</div>`;
+                    }
+                } else {
+                    resultsDiv.innerHTML = '<div class="info">No authentication token found in localStorage</div>';
+                    log('No token found - user is not authenticated');
+                }
+                
+            } catch (error) {
+                log(`Error checking auth state: ${error.message}`, 'error');
+                resultsDiv.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+            }
+        }
+
+        function clearLocalStorage() {
+            log('Clearing localStorage...');
+            localStorage.clear();
+            currentToken = null;
+            log('localStorage cleared successfully', 'success');
+            checkAuthState();
+        }
+
+        function startNetworkMonitoring() {
+            networkMonitorActive = true;
+            log('Network monitoring started', 'success');
+            
+            // Override fetch to monitor requests
+            const originalFetch = window.fetch;
+            window.fetch = async function(...args) {
+                if (!networkMonitorActive) return originalFetch.apply(this, args);
+                
+                const [url, options = {}] = args;
+                const method = options.method || 'GET';
+                const headers = options.headers || {};
+                
+                log(`🌐 ${method} ${url}`);
+                
+                try {
+                    const response = await originalFetch.apply(this, args);
+                    const logEntry = `
+                        <div class="network-request">
+                            ✅ ${method} ${url} - ${response.status} ${response.statusText}
+                        </div>
+                    `;
+                    document.getElementById('network-log').innerHTML += logEntry;
+                    
+                    // Log response for auth-related requests
+                    if (url.includes('/auth/login') || url.includes('/dashboard')) {
+                        try {
+                            const clone = response.clone();
+                            const data = await clone.json();
+                            log(`Response data: ${JSON.stringify(data, null, 2).substring(0, 200)}...`);
+                        } catch (e) {
+                            // Ignore JSON parse errors
+                        }
+                    }
+                    
+                    return response;
+                } catch (error) {
+                    const errorEntry = `
+                        <div class="network-error">
+                            ❌ ${method} ${url} - Error: ${error.message}
+                        </div>
+                    `;
+                    document.getElementById('network-log').innerHTML += errorEntry;
+                    log(`Network request failed: ${error.message}`, 'error');
+                    throw error;
+                }
+            };
+        }
+
+        function stopNetworkMonitoring() {
+            networkMonitorActive = false;
+            log('Network monitoring stopped', 'info');
+        }
+
+        function clearNetworkLog() {
+            document.getElementById('network-log').innerHTML = '';
+            log('Network log cleared');
+        }
+
+        async function testLoginProcess() {
+            const resultsDiv = document.getElementById('login-results');
+            resultsDiv.innerHTML = '<div class="info">Testing login process...</div>';
+            log('Starting login process test...');
+            
+            try {
+                // Step 1: Login
+                log('Step 1: Attempting login...');
+                const loginResponse = await fetch(`${API_BASE}/api/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: 'admin@example.com',
+                        password: 'admin123'
+                    })
+                });
+
+                const loginData = await loginResponse.json();
+                
+                if (loginResponse.ok && loginData.success) {
+                    log('✅ Login successful', 'success');
+                    currentToken = loginData.token;
+                    
+                    // Store token in localStorage (like the frontend does)
+                    localStorage.setItem('token', currentToken);
+                    localStorage.setItem('user', JSON.stringify(loginData.user));
+                    
+                    resultsDiv.innerHTML = '<div class="success">✅ Login API successful</div>';
+                    
+                    // Step 2: Test dashboard API
+                    log('Step 2: Testing dashboard API with new token...');
+                    await testDashboardWithToken();
+                    
+                } else {
+                    log(`❌ Login failed: ${loginData.message || 'Unknown error'}`, 'error');
+                    resultsDiv.innerHTML = `<div class="error">❌ Login failed: ${loginData.message || 'Unknown error'}</div>`;
+                }
+                
+            } catch (error) {
+                log(`❌ Login process error: ${error.message}`, 'error');
+                resultsDiv.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        async function testDashboardWithToken() {
+            if (!currentToken) {
+                log('No token available for dashboard test', 'error');
+                return;
+            }
+            
+            const resultsDiv = document.getElementById('login-results');
+            
+            try {
+                const dashboardResponse = await fetch(`${API_BASE}/api/dashboard/`, {
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`
+                    }
+                });
+
+                const dashboardData = await dashboardResponse.json();
+                
+                if (dashboardResponse.ok && dashboardData.success) {
+                    log(`✅ Dashboard API successful - found ${dashboardData.data.sites.length} sites`, 'success');
+                    resultsDiv.innerHTML += '<div class="success">✅ Dashboard API working</div>';
+                    
+                    // Check for potential redirect issues
+                    if (dashboardData.data.sites.length === 0) {
+                        log('⚠️  No sites found - this might cause frontend redirect issues', 'warning');
+                        resultsDiv.innerHTML += '<div class="warning">⚠️  No sites found in dashboard</div>';
+                    }
+                    
+                } else {
+                    log(`❌ Dashboard API failed: ${dashboardData.message || 'Unknown error'}`, 'error');
+                    resultsDiv.innerHTML += `<div class="error">❌ Dashboard API failed: ${dashboardData.message || 'Unknown error'}</div>`;
+                }
+                
+            } catch (error) {
+                log(`❌ Dashboard API error: ${error.message}`, 'error');
+                resultsDiv.innerHTML += `<div class="error">❌ Dashboard API error: ${error.message}</div>`;
+            }
+        }
+
+        async function testTokenValidation() {
+            const resultsDiv = document.getElementById('login-results');
+            resultsDiv.innerHTML = '<div class="info">Testing token validation...</div>';
+            
+            if (!currentToken) {
+                resultsDiv.innerHTML = '<div class="error">No token available</div>';
+                return;
+            }
+            
+            try {
+                const profileResponse = await fetch(`${API_BASE}/api/auth/profile`, {
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`
+                    }
+                });
+
+                const profileData = await profileResponse.json();
+                
+                if (profileResponse.ok) {
+                    log('✅ Token validation successful', 'success');
+                    resultsDiv.innerHTML = '<div class="success">✅ Token is valid</div>';
+                } else {
+                    log(`❌ Token validation failed: ${profileData.message || 'Unknown error'}`, 'error');
+                    resultsDiv.innerHTML = `<div class="error">❌ Token invalid: ${profileData.message || 'Unknown error'}</div>`;
+                }
+                
+            } catch (error) {
+                log(`❌ Token validation error: ${error.message}`, 'error');
+                resultsDiv.innerHTML = `<div class="error">❌ Validation error: ${error.message}</div>`;
+            }
+        }
+
+        function simulateFrontendLogin() {
+            const resultsDiv = document.getElementById('simulation-results');
+            resultsDiv.innerHTML = '<div class="info">Simulating frontend login flow...</div>';
+            log('Simulating frontend login behavior...');
+            
+            // Simulate the frontend login process step by step
+            setTimeout(async () => {
+                try {
+                    // Step 1: Clear any existing auth data
+                    log('Step 1: Clearing existing auth data');
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
+                    
+                    // Step 2: Login
+                    log('Step 2: Calling login API...');
+                    const loginResponse = await fetch(`${API_BASE}/api/auth/login`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            email: 'admin@example.com',
+                            password: 'admin123'
+                        })
+                    });
+
+                    const loginData = await loginResponse.json();
+                    
+                    if (loginResponse.ok && loginData.success) {
+                        log('✅ Login successful', 'success');
+                        
+                        // Step 3: Store token (like frontend does)
+                        log('Step 3: Storing authentication data');
+                        localStorage.setItem('token', loginData.token);
+                        localStorage.setItem('user', JSON.stringify(loginData.user));
+                        
+                        // Step 4: Navigate to dashboard (simulate React Router)
+                        log('Step 4: Simulating dashboard navigation...');
+                        
+                        // Check what the frontend would do
+                        const user = loginData.user;
+                        const token = loginData.token;
+                        
+                        log(`User role: ${user.role}`);
+                        log(`Token length: ${token.length}`);
+                        
+                        // Step 5: Test dashboard data fetch (what Dashboard component does)
+                        log('Step 5: Fetching dashboard data...');
+                        const dashboardResponse = await fetch(`${API_BASE}/api/dashboard/`, {
+                            headers: {
+                                'Authorization': `Bearer ${token}`
+                            }
+                        });
+
+                        const dashboardData = await dashboardResponse.json();
+                        
+                        if (dashboardResponse.ok && dashboardData.success) {
+                            log(`✅ Dashboard data received - ${dashboardData.data.sites.length} sites`, 'success');
+                            resultsDiv.innerHTML = `
+                                <div class="success">
+                                    ✅ Frontend simulation successful!<br>
+                                    User: ${user.name} (${user.role})<br>
+                                    Sites: ${dashboardData.data.sites.length}<br>
+                                    Token: Valid and working
+                                </div>
+                            `;
+                            
+                            // Now check what might cause a redirect back
+                            checkPotentialRedirectIssues(user, token, dashboardData);
+                            
+                        } else {
+                            log(`❌ Dashboard data fetch failed: ${dashboardData.message}`, 'error');
+                            resultsDiv.innerHTML += `<div class="error">Dashboard fetch failed</div>`;
+                        }
+                        
+                    } else {
+                        log(`❌ Login failed: ${loginData.message}`, 'error');
+                        resultsDiv.innerHTML = `<div class="error">Login failed: ${loginData.message}</div>`;
+                    }
+                    
+                } catch (error) {
+                    log(`❌ Simulation error: ${error.message}`, 'error');
+                    resultsDiv.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+                }
+            }, 100);
+        }
+
+        function checkPotentialRedirectIssues(user, token, dashboardData) {
+            log('Checking for potential redirect issues...');
+            
+            // Check 1: Empty sites
+            if (dashboardData.data.sites.length === 0) {
+                log('⚠️  WARNING: No sites found - frontend might redirect to "no sites" page', 'warning');
+            }
+            
+            // Check 2: Token expiration
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                const now = Math.floor(Date.now() / 1000);
+                if (payload.exp < now) {
+                    log('⚠️  WARNING: Token is expired - will cause authentication issues', 'warning');
+                }
+            } catch (e) {
+                log('⚠️  WARNING: Could not decode token', 'warning');
+            }
+            
+            // Check 3: User role
+            if (!user.role) {
+                log('⚠️  WARNING: No user role found - might cause authorization issues', 'warning');
+            }
+            
+            log('Potential redirect issue analysis complete');
+        }
+
+        function simulateDashboardRedirect() {
+            const resultsDiv = document.getElementById('simulation-results');
+            resultsDiv.innerHTML = '<div class="info">Simulating dashboard redirect logic...</div>';
+            log('Simulating what happens when dashboard loads...');
+            
+            // Check React Router logic from App.jsx
+            log('Checking React Router authentication logic...');
+            
+            const token = localStorage.getItem('token');
+            const user = localStorage.getItem('user');
+            
+            log(`Token exists: ${!!token}`);
+            log(`User exists: ${!!user}`);
+            
+            if (token && user) {
+                try {
+                    const userData = JSON.parse(user);
+                    log(`User role: ${userData.role}`);
+                    log(`User email: ${userData.email}`);
+                    
+                    resultsDiv.innerHTML = `
+                        <div class="success">
+                            ✅ Authentication check would pass<br>
+                            User: ${userData.name} (${userData.role})<br>
+                            Should be able to access dashboard
+                        </div>
+                    `;
+                    
+                    // Test actual dashboard component logic
+                    testDashboardComponentLogic();
+                    
+                } catch (error) {
+                    log(`❌ Error parsing user data: ${error.message}`, 'error');
+                    resultsDiv.innerHTML = `<div class="error">Error parsing user data</div>`;
+                }
+            } else {
+                log('❌ Authentication check would fail - redirect to login', 'error');
+                resultsDiv.innerHTML = `<div class="error">Would redirect to login page</div>`;
+            }
+        }
+
+        async function testDashboardComponentLogic() {
+            log('Testing dashboard component initialization logic...');
+            
+            // Simulate the Dashboard component's useEffect calls
+            try {
+                const token = localStorage.getItem('token');
+                
+                if (!token) {
+                    log('❌ No token available for dashboard component', 'error');
+                    return;
+                }
+                
+                log('Simulating dashboard data fetch...');
+                
+                // This simulates the fetchSites() call in Dashboard.jsx
+                const response = await fetch(`${API_BASE}/api/dashboard/`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    log(`✅ Dashboard component would load successfully`, 'success');
+                    log(`Found ${data.data.sites.length} sites`);
+                    
+                    if (data.data.sites.length === 0) {
+                        log('⚠️  No sites - dashboard would show "empty state"', 'warning');
+                    } else {
+                        log('✅ Sites found - dashboard would load normally', 'success');
+                    }
+                } else {
+                    log(`❌ Dashboard component would fail to load: ${data.message}`, 'error');
+                }
+                
+            } catch (error) {
+                log(`❌ Dashboard component error: ${error.message}`, 'error');
+            }
+        }
+
+        function openRealLoginPage() {
+            const resultsDiv = document.getElementById('real-results');
+            resultsDiv.innerHTML = `
+                <div class="info">
+                    Opening real login page...<br>
+                    <strong>Instructions:</strong>
+                    <ol>
+                        <li>Login with: admin@example.com / admin123</li>
+                        <li>Watch the browser console for any errors</li>
+                        <li>Check Network tab in DevTools for failed requests</li>
+                        <li>Report back what you see!</li>
+                    </ol>
+                </div>
+            `;
+            
+            // Clear any existing auth data first
+            localStorage.clear();
+            log('Cleared localStorage before opening login page');
+            
+            // Open login page
+            window.open(`${API_BASE}/login`, '_blank');
+            log('Opened real login page - observe the behavior closely');
+        }
+
+        function clearDebugLog() {
+            document.getElementById('debug-log').innerHTML = '';
+        }
+
+        // Auto-check auth state on load
+        window.addEventListener('load', () => {
+            log('Debug page loaded - ready to test login flow');
+            checkAuthState();
+        });
+
+        // Monitor localStorage changes
+        window.addEventListener('storage', (e) => {
+            log(`localStorage changed: ${e.key} = ${e.newValue ? 'SET' : 'CLEARED'}`);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Actual Login Flow</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 1000px; 
+            margin: 0 auto; 
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 10px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section { 
+            margin: 20px 0; 
+            padding: 15px; 
+            border: 1px solid #ddd; 
+            border-radius: 5px;
+            background-color: #fafafa;
+        }
+        .success { 
+            color: #28a745; 
+            font-weight: bold;
+        }
+        .error { 
+            color: #dc3545; 
+            font-weight: bold;
+        }
+        .info { 
+            color: #17a2b8;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #results {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        .step {
+            margin: 10px 0;
+            padding: 10px;
+            border-left: 3px solid #007bff;
+            background-color: #f8f9fa;
+        }
+        iframe {
+            width: 100%;
+            height: 600px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test Actual Login Flow</h1>
+        <p>This page tests the real login flow in an iframe to see exactly what happens.</p>
+        
+        <div class="test-section">
+            <h3>Step-by-Step Test</h3>
+            <button onclick="startFullTest()">Start Complete Test</button>
+            <button onclick="clearResults()">Clear Results</button>
+            <div id="results"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>Manual Test (Real Login Page)</h3>
+            <button onclick="loadLoginPage()">Load Login Page</button>
+            <button onclick="clearStorageAndReload()">Clear Storage & Reload</button>
+            <div id="manual-results"></div>
+            <iframe id="login-frame" style="display: none;"></iframe>
+        </div>
+        
+        <div class="test-section">
+            <h3>Quick Tests</h3>
+            <button onclick="testCurrentAuth()">Test Current Auth State</button>
+            <button onclick="testTokenStorage()">Test Token Storage</button>
+            <button onclick="simulateFrontendAuth()">Simulate Frontend Auth</button>
+            <div id="quick-results"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://talkavax-production.up.railway.app';
+        let testResults = [];
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const color = type === 'error' ? '#dc3545' : type === 'success' ? '#28a745' : '#007bff';
+            testResults.push(`[${timestamp}] ${message}`);
+            updateResults();
+        }
+
+        function updateResults() {
+            document.getElementById('results').innerHTML = testResults.join('<br>');
+        }
+
+        function clearResults() {
+            testResults = [];
+            updateResults();
+            document.getElementById('manual-results').innerHTML = '';
+            document.getElementById('quick-results').innerHTML = '';
+        }
+
+        async function startFullTest() {
+            clearResults();
+            log('🚀 Starting complete login flow test...');
+            
+            try {
+                // Step 1: Clear any existing auth data
+                log('Step 1: Clearing existing authentication data');
+                localStorage.clear();
+                sessionStorage.clear();
+                
+                // Step 2: Test login API directly
+                log('Step 2: Testing login API endpoint');
+                const loginResponse = await fetch(`${API_BASE}/api/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: 'admin@example.com',
+                        password: 'admin123'
+                    })
+                });
+
+                const loginData = await loginResponse.json();
+                
+                if (loginResponse.ok && loginData.success) {
+                    log('✅ Login API successful', 'success');
+                    log(`Token received: ${loginData.token.substring(0, 50)}...`);
+                    log(`User: ${loginData.user.name} (${loginData.user.role})`);
+                    
+                    // Step 3: Store token like frontend would
+                    log('Step 3: Storing token in localStorage (frontend simulation)');
+                    localStorage.setItem('token', loginData.token);
+                    localStorage.setItem('user', JSON.stringify(loginData.user));
+                    
+                    // Step 4: Test token validation
+                    log('Step 4: Testing token validation');
+                    const profileResponse = await fetch(`${API_BASE}/api/auth/profile`, {
+                        headers: {
+                            'Authorization': `Bearer ${loginData.token}`
+                        }
+                    });
+
+                    if (profileResponse.ok) {
+                        log('✅ Token validation successful', 'success');
+                        
+                        // Step 5: Test dashboard API
+                        log('Step 5: Testing dashboard API');
+                        const dashboardResponse = await fetch(`${API_BASE}/api/dashboard/`, {
+                            headers: {
+                                'Authorization': `Bearer ${loginData.token}`
+                            }
+                        });
+
+                        const dashboardData = await dashboardResponse.json();
+                        
+                        if (dashboardResponse.ok && dashboardData.success) {
+                            log(`✅ Dashboard API successful - ${dashboardData.data.sites.length} sites found`, 'success');
+                            
+                            // Step 6: Check for potential redirect issues
+                            checkForRedirectIssues(loginData, dashboardData);
+                            
+                        } else {
+                            log(`❌ Dashboard API failed: ${dashboardData.message}`, 'error');
+                        }
+                    } else {
+                        log('❌ Token validation failed', 'error');
+                    }
+                } else {
+                    log(`❌ Login API failed: ${loginData.message}`, 'error');
+                }
+                
+            } catch (error) {
+                log(`❌ Test error: ${error.message}`, 'error');
+            }
+            
+            log('🎯 Test complete! Check the iframe below to test the actual frontend.');
+        }
+
+        function checkForRedirectIssues(loginData, dashboardData) {
+            log('🔍 Checking for potential redirect issues...');
+            
+            // Check 1: Empty sites
+            if (dashboardData.data.sites.length === 0) {
+                log('⚠️  WARNING: No sites found - frontend might show "empty state" or redirect', 'warning');
+            }
+            
+            // Check 2: Token expiration
+            try {
+                const payload = JSON.parse(atob(loginData.token.split('.')[1]));
+                const now = Math.floor(Date.now() / 1000);
+                const expiresIn = payload.exp - now;
+                
+                log(`Token expires in: ${Math.floor(expiresIn / 60)} minutes`);
+                
+                if (payload.exp < now) {
+                    log('❌ CRITICAL: Token is already expired!', 'error');
+                } else if (expiresIn < 300) { // Less than 5 minutes
+                    log('⚠️  WARNING: Token expires soon (less than 5 minutes)', 'warning');
+                }
+            } catch (e) {
+                log('⚠️  WARNING: Could not decode token payload', 'warning');
+            }
+            
+            // Check 3: User data completeness
+            if (!loginData.user.role) {
+                log('⚠️  WARNING: No user role in token - might cause auth issues', 'warning');
+            }
+            
+            // Check 4: Multiple sites with same ID (noticed in API response)
+            const siteIds = dashboardData.data.sites.map(site => site.site_id);
+            const duplicates = siteIds.filter((id, index) => siteIds.indexOf(id) !== index);
+            if (duplicates.length > 0) {
+                log(`⚠️  WARNING: Found duplicate site IDs: ${duplicates.join(', ')}`, 'warning');
+            }
+            
+            log('✅ Redirect issue analysis complete');
+        }
+
+        function loadLoginPage() {
+            const frame = document.getElementById('login-frame');
+            const resultsDiv = document.getElementById('manual-results');
+            
+            resultsDiv.innerHTML = `
+                <div class="info">
+                    Loading login page in iframe...<br>
+                    <strong>Instructions:</strong>
+                    <ol>
+                        <li>Login with: admin@example.com / admin123</li>
+                        <li>Watch what happens after login</li>
+                        <li>Check if you get redirected back to login</li>
+                        <li>Look for any error messages in the iframe</li>
+                    </ol>
+                </div>
+            `;
+            
+            frame.style.display = 'block';
+            frame.src = `${API_BASE}/login`;
+            
+            // Monitor the iframe for navigation changes
+            let lastUrl = frame.src;
+            const checkNavigation = setInterval(() => {
+                try {
+                    if (frame.contentWindow && frame.contentWindow.location) {
+                        const currentUrl = frame.contentWindow.location.href;
+                        if (currentUrl !== lastUrl) {
+                            log(`🔄 Iframe navigation detected: ${currentUrl}`);
+                            lastUrl = currentUrl;
+                            
+                            // Check if we're back on login page
+                            if (currentUrl.includes('/login')) {
+                                log('⚠️  Back on login page - redirect issue detected!', 'warning');
+                                resultsDiv.innerHTML += '<div class="warning">⚠️  Redirected back to login page!</div>';
+                            } else if (currentUrl.includes('/dashboard')) {
+                                log('✅ Successfully reached dashboard', 'success');
+                                resultsDiv.innerHTML += '<div class="success">✅ Reached dashboard!</div>';
+                            }
+                        }
+                    }
+                } catch (e) {
+                    // Cross-origin restrictions may prevent access
+                    clearInterval(checkNavigation);
+                }
+            }, 1000);
+            
+            // Stop checking after 30 seconds
+            setTimeout(() => clearInterval(checkNavigation), 30000);
+        }
+
+        function clearStorageAndReload() {
+            localStorage.clear();
+            sessionStorage.clear();
+            log('Cleared all storage');
+            
+            const frame = document.getElementById('login-frame');
+            if (frame.src) {
+                frame.src = frame.src; // Reload iframe
+                log('Reloaded iframe');
+            }
+        }
+
+        async function testCurrentAuth() {
+            const resultsDiv = document.getElementById('quick-results');
+            resultsDiv.innerHTML = '<div class="info">Testing current auth state...</div>';
+            
+            try {
+                const token = localStorage.getItem('token');
+                const user = localStorage.getItem('user');
+                
+                resultsDiv.innerHTML += `<div>Token: ${token ? 'EXISTS' : 'NOT FOUND'}</div>`;
+                resultsDiv.innerHTML += `<div>User: ${user ? 'EXISTS' : 'NOT FOUND'}</div>`;
+                
+                if (token) {
+                    const profileResponse = await fetch(`${API_BASE}/api/auth/profile`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+                    
+                    if (profileResponse.ok) {
+                        resultsDiv.innerHTML += '<div class="success">✅ Token is valid</div>';
+                    } else {
+                        resultsDiv.innerHTML += '<div class="error">❌ Token is invalid</div>';
+                    }
+                }
+                
+            } catch (error) {
+                resultsDiv.innerHTML += `<div class="error">Error: ${error.message}</div>`;
+            }
+        }
+
+        function testTokenStorage() {
+            const resultsDiv = document.getElementById('quick-results');
+            resultsDiv.innerHTML = '<div class="info">Testing token storage...</div>';
+            
+            try {
+                // Test storing and retrieving
+                const testToken = 'test-token-' + Date.now();
+                localStorage.setItem('test-token', testToken);
+                const retrieved = localStorage.getItem('test-token');
+                
+                if (retrieved === testToken) {
+                    resultsDiv.innerHTML += '<div class="success">✅ localStorage working correctly</div>';
+                    localStorage.removeItem('test-token');
+                } else {
+                    resultsDiv.innerHTML += '<div class="error">❌ localStorage not working</div>';
+                }
+                
+            } catch (error) {
+                resultsDiv.innerHTML += `<div class="error">Error: ${error.message}</div>`;
+            }
+        }
+
+        function simulateFrontendAuth() {
+            const resultsDiv = document.getElementById('quick-results');
+            resultsDiv.innerHTML = '<div class="info">Simulating frontend auth logic...</div>';
+            
+            // Simulate the useAuth hook behavior
+            const token = localStorage.getItem('token');
+            const user = localStorage.getItem('user');
+            
+            const isLoading = false; // Would be true during initialization
+            const isAuthenticated = !!(token && user);
+            
+            resultsDiv.innerHTML += `<div>isLoading: ${isLoading}</div>`;
+            resultsDiv.innerHTML += `<div>isAuthenticated: ${isAuthenticated}</div>`;
+            resultsDiv.innerHTML += `<div>user: ${user ? JSON.parse(user).email : 'null'}</div>`;
+            
+            // Simulate App.jsx route logic
+            if (isLoading) {
+                resultsDiv.innerHTML += '<div>Would show loading spinner</div>';
+            } else if (isAuthenticated) {
+                resultsDiv.innerHTML += '<div class="success">✅ Would allow access to dashboard</div>';
+            } else {
+                resultsDiv.innerHTML += '<div class="error">❌ Would redirect to login</div>';
+            }
+        }
+
+        // Auto-start basic test on load
+        window.addEventListener('load', () => {
+            log('Page loaded - ready for testing');
+        });
+    </script>
+</body>
+</html>

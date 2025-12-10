@@ -14,7 +14,7 @@ import Admin from './pages/Admin'
 import SuperAdminDashboard from './pages/SuperAdminDashboard'
 
 function App() {
-  const { user, isLoading } = useAuth()
+  const { user, isLoading, isAuthenticated } = useAuth()
 
   if (isLoading) {
     return (
@@ -26,24 +26,28 @@ function App() {
     )
   }
 
+  console.log('App.jsx - User:', user)
+  console.log('App.jsx - isAuthenticated:', isAuthenticated)
+  console.log('App.jsx - isLoading:', isLoading)
+
   return (
     <div className="App">
       <Navbar />
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/login" element={!user ? <Login /> : <Navigate to="/dashboard" />} />
-        <Route path="/signup" element={!user ? <Signup /> : <Navigate to="/dashboard" />} />
+        <Route path="/login" element={!isAuthenticated ? <Login /> : <Navigate to="/dashboard" replace />} />
+        <Route path="/signup" element={!isAuthenticated ? <Signup /> : <Navigate to="/dashboard" replace />} />
         <Route 
           path="/dashboard" 
-          element={user ? <Dashboard /> : <Navigate to="/login" />} 
+          element={isAuthenticated ? <Dashboard /> : <Navigate to="/login" replace />} 
         />
         <Route 
           path="/admin" 
-          element={user?.role === 'admin' ? <Admin /> : <Navigate to="/dashboard" />} 
+          element={isAuthenticated && user?.role === 'admin' ? <Admin /> : <Navigate to="/dashboard" replace />} 
         />
         <Route 
           path="/super-admin" 
-          element={user?.role === 'admin' ? <SuperAdminDashboard /> : <Navigate to="/dashboard" />} 
+          element={isAuthenticated && user?.role === 'admin' ? <SuperAdminDashboard /> : <Navigate to="/dashboard" replace />} 
         />
       </Routes>
     </div>

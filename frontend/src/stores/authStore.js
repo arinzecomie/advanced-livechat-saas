@@ -20,8 +20,11 @@ const useAuthStore = create(
       state.token = token
       if (token) {
         localStorage.setItem('token', token)
+        // Also update isAuthenticated when token is set
+        state.isAuthenticated = true
       } else {
         localStorage.removeItem('token')
+        state.isAuthenticated = false
       }
     }),
 
@@ -56,10 +59,22 @@ const useAuthStore = create(
 
         const data = await response.json()
         
-        setToken(data.token)
-        setUser(data.user)
+        // Ensure token and user are properly set before returning success
+        if (data.token && data.user) {
+          setToken(data.token)
+          setUser(data.user)
+          
+          // Verify that authentication state is properly updated
+          const state = get()
+          if (!state.isAuthenticated || !state.token || !state.user) {
+            throw new Error('Authentication state not properly updated')
+          }
+          
+          return { success: true, data }
+        } else {
+          throw new Error('Invalid response from server')
+        }
         
-        return { success: true, data }
       } catch (error) {
         setError(error.message)
         return { success: false, error: error.message }

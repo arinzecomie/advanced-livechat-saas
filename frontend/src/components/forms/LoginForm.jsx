@@ -26,7 +26,10 @@ const LoginForm = () => {
     try {
       const result = await login(data)
       if (result.success) {
-        navigate('/dashboard')
+        // Add a small delay to ensure authentication state is fully updated
+        setTimeout(() => {
+          navigate('/dashboard')
+        }, 100)
       }
     } catch (error) {
       console.error('Login failed:', error)
