@@ -1,248 +1,106 @@
+PS C:\Users\Kizito\livechatwithreact\advanced-livechat-saas> del railway.toml
+PS C:\Users\Kizito\livechatwithreact\advanced-livechat-saas> railway variables
+╔═══════════════════════════ Variables for talkavax ═══════════════════════════╗
+║ CORS_ORIGIN                  │ *                                             ║
+║──────────────────────────────────────────────────────────────────────────────║
+║ FORCE_MYSQL                  │ true                                          ║
+║──────────────────────────────────────────────────────────────────────────────║
+║ JWT_SECRET                   │ gQfuUMqqT52JnE6qeKv5                          ║
+║──────────────────────────────────────────────────────────────────────────────║
+║ MONGO_URI                    │ mongodb+srv://                                ║
+║                              │ arinzeezeozue_db_user:PByZWA70QmruZIC9@usersc ║
+║                              │ hat.tjk5ezx.mongodb.net/advanced-livechat?    ║
+║                              │ appName=Userschat                             ║
+║──────────────────────────────────────────────────────────────────────────────║
+║ MYSQL_DATABASE               │ railway                                       ║
+║──────────────────────────────────────────────────────────────────────────────║
+║ MYSQL_URL                    │ mysql://                                      ║
+║                              │ root:gwoSTNxPDOeDqdzSmaGEViMUPpvqNsIu@mysql.r ║
+║                              │ ailway.internal:3306/railway                  ║
+║──────────────────────────────────────────────────────────────────────────────║
+║ NODE_ENV                     │ production                                    ║
+║──────────────────────────────────────────────────────────────────────────────║
+║ PORT                         │ 3000                                          ║
+║──────────────────────────────────────────────────────────────────────────────║
+║ RAILWAY_ENVIRONMENT          │ production                                    ║
+║──────────────────────────────────────────────────────────────────────────────║
+║ RAILWAY_ENVIRONMENT_ID       │ a22e2068-2711-47a9-8394-8ae873ab971d          ║
+║──────────────────────────────────────────────────────────────────────────────║
+║ RAILWAY_ENVIRONMENT_NAME     │ production                                    ║
+║──────────────────────────────────────────────────────────────────────────────║
+║ RAILWAY_PRIVATE_DOMAIN       │ talkavax.railway.internal                     ║
+║──────────────────────────────────────────────────────────────────────────────║
+║ RAILWAY_PROJECT_ID           │ c66a41be-9633-4791-a1c0-188ce1b5ec0b          ║
+║──────────────────────────────────────────────────────────────────────────────║
+║ RAILWAY_PROJECT_NAME         │ talkavax                                      ║
+║──────────────────────────────────────────────────────────────────────────────║
+║ RAILWAY_PUBLIC_DOMAIN        │ talkavax-production.up.railway.app            ║
+║──────────────────────────────────────────────────────────────────────────────║
+║ RAILWAY_SERVICE_ID           │ 4553cba6-6121-4b1c-8c69-153db4ce34dd          ║
+║──────────────────────────────────────────────────────────────────────────────║
+║ RAILWAY_SERVICE_NAME         │ talkavax                                      ║
+║──────────────────────────────────────────────────────────────────────────────║
+║ RAILWAY_SERVICE_TALKAVAX_URL │ talkavax-production.up.railway.app            ║
+║──────────────────────────────────────────────────────────────────────────────║
+║ RAILWAY_STATIC_URL           │ talkavax-production.up.railway.app            ║
+╚══════════════════════════════════════════════════════════════════════════════╝
 
 PS C:\Users\Kizito\livechatwithreact\advanced-livechat-saas> railway up
-  Indexed                                                                                                                 Compressed [====================] 100%                                                                                  Uploaded                                                                                                                Build Logs: https://railway.com/project/c66a41be-9633-4791-a1c0-188ce1b5ec0b/service/4553cba6-6121-4b1c-8c69-153db4ce34dd?id=8a48ddfe-189d-4693-82e6-198bd5756dba&
-Failed to stream build logs: Failed to retrieve build log
-PS C:\Users\Kizito\livechatwithreact\advanced-livechat-saas> railway logs
-Starting Container
-🚀 Starting Advanced Live Chat SaaS for Railway...
-📋 Configuration:
-  PORT: 3000
-> advanced-livechat-saas@1.0.0 start:railway
+  Indexed                                                                                                                 Compressed [====================] 100%                                                                                  Uploaded                                                                                                                Build Logs: https://railway.com/project/c66a41be-9633-4791-a1c0-188ce1b5ec0b/service/4553cba6-6121-4b1c-8c69-153db4ce34dd?id=fccaffaf-92eb-492d-912b-a85a1cebe0f7&
 
-> node railway-final-start.js
+[Region: asia-southeast1]
+=========================
+Using Detected Dockerfile
+=========================
 
-  NODE_ENV: production
-  MONGO_URI: SET (hidden)
-📁 Current working directory: /app
-📂 Directory contents: [
-  'backend',
-  'deploy.js',
-  'ecosystem.config.js',
-  'fix-railway-db.js',
-  'frontend',
-  'logs',
-  'node_modules',
-  'package-lock.json',
-  'package.json',
-  'railway-final-start.js',
-  'railway-startup.js',
-  'single-url-deploy-improved.js'
-]
-🔍 Checking path: /app/frontend/dist
-✅ Frontend found at: /app/frontend/dist
-✅ Using frontend at: /app/frontend/dist
-✅ Frontend is built
-🔧 Running database fix...
-DB FIX: 🚂 Railway Database Fix - Direct Execution
-  - routes
-  - middlewares
-  - migrations
-  - models
-  - node_modules
-  - single-url-deploy-improved.js
-  - package-lock.json
-📁 Backend directory contents:
-  - package.json
-DB FIX: - .env.example
-  - README_BACKEND.md
-  - check-mongo-simple.js
-  - config
-DB FIX: - controllers
-DB FIX: - db-fix-endpoint.js
-  - knexfile-fixed.js
-  - knexfile-postgresql.js
-  - knexfile.js
-DB FIX: 📅 Timestamp: 2025-12-09T07:55:12.476Z
-📁 Working directory: /app
-DB FIX: 📂 Directory contents:
-  - backend
-  - deploy.js
-  - ecosystem.config.js
-  - fix-railway-db.js
-  - frontend
-DB FIX: - logs
-  - node_modules
-  - package-lock.json
-  - package.json
-  - railway-final-start.js
-  - railway-startup.js
-  - seeds
-  - server-fixed.js
-  - server-single-url.js
-  - server.js
-  - server_optimized.js
-  - services
-  - test-mongo-quick.js
-  - test-mongodb-complete.js
-  - test-mongodb.js
-  - utils
-📄 Database path: /app/backend/dev.sqlite3
-❌ Database file does not exist, will create
-
-🚀 Executing database fix...
-DB FIX: 🔧 Starting database fix...
-📊 Checking current tables...
-DB FIX: ✅ Connected to SQLite database
-DB FIX: Current tables: []
-❌ Users table missing, will create
-
-🔨 Creating users table...
-DB FIX: ✅ SQL executed successfully
-DB FIX: Rows affected: 0
-
-🔨 Creating sites table...
-DB FIX: ✅ SQL executed successfully
-   Rows affected: 0
-DB FIX: 🔨 Creating visitors table...
-DB FIX: ✅ SQL executed successfully
-DB FIX: Rows affected: 0
-
-🔨 Creating payments table...
-DB FIX: ✅ SQL executed successfully
-DB FIX: Rows affected: 0
-
-👤 Inserting default admin user...
-DB FIX: ✅ SQL executed successfully
-DB FIX: Rows affected: 1
-
-👤 Inserting demo user...
-DB FIX: ✅ SQL executed successfully
-   Rows affected: 1
-DB FIX: 🌐 Inserting default sites...
-DB FIX: ✅ SQL executed successfully
-DB FIX: Rows affected: 2
-
-✅ Verifying final data...
-DB FIX: 📊 Final results:
-   Users count: 2
-   Sites count: 2
-DB FIX: Admin user: {
-  id: 1,
-  email: 'admin@example.com',
-  name: 'Admin User',
-  role: 'admin'
-}
-
-🎉 Database fix completed successfully!
-✅ Admin login should now work:
-   Email: admin@example.com
-DB FIX: Password: admin123
-
-🎉 SUCCESS: Database has been fixed!
-🧪 You can now test the login with:
-   Email: admin@example.com
-   Password: admin123
-Database fix exited with code 0
-🎯 Starting backend server from: /app/backend/server.js
-SERVER: ✅ sites table exists
-SERVER: ✅ visitors table exists
-SERVER: ✅ payments table exists
-SERVER: 👤 Inserting default SQLite users...
-SERVER ERROR: ❌ Failed to parse DATABASE_URL: parse is not defined
-✅ Server appears to be running
-SERVER: 🎯 Demo page: http://localhost:3000/demo.html
-SERVER ERROR: ❌ Database connection failed for models: parse is not defined
-SERVER: 💾 Falling back to SQLite for models...
-SERVER: ✅ SQLite database connected
-SERVER: 🔧 Initializing SQLite database...
-SERVER: 🔧 Database configured for production environment
-SERVER: 📊 Current tables: [ 'users', 'sqlite_sequence', 'sites', 'visitors', 'payments' ]
-SERVER: ✅ SQLite fallback loaded for models
-SERVER: 🐘 Using PostgreSQL connection
-SERVER: ✅ users table exists
-✅ Database provider initialized with sqlite
-SERVER: 🔄 Connecting to MongoDB...
-SERVER: 🚀 Advanced Live Chat SaaS server running on port 3000
-SERVER: 🐘 Attempting PostgreSQL connection for models...
-📊 Dashboard: http://localhost:3000/dashboard
-SERVER: ✅ Default SQLite users inserted
-SERVER: 🎉 SQLite initialization completed!
-SERVER: [2025-12-09T07:55:14.325Z] GET /health
-SERVER: ✅ MongoDB connected successfully to Atlas!
-📊 Database: advanced-livechat
-SERVER: ✅ MongoDB connection verified
-🔧 Creating indexes...
-SERVER: ✅ Indexes created successfully
-SERVER: 📋 MongoDB Version: 8.0.16
-🏠 Host: ac-xgidsaq-shard-00-02.tjk5ezx.mongodb.net:27017
-SERVER: [2025-12-09T07:55:18.736Z] GET /health
-✅ Health check passed: {
-  status: 'ok',
-  timestamp: '2025-12-09T07:55:18.737Z',
-  database: 'sqlite',
-  mongodb: 'configured'
-}
-🎉 Application ready at http://localhost:3000
-🌐 Health endpoint: http://localhost:3000/health
-SERVER: [2025-12-09T07:55:46.714Z] GET /health
-SERVER ERROR: ❌ JSON Parse Error: {
-  message: 'Unexpected token e in JSON at position 1',
-  body: '{email:admin@example.com,password:admin123}',
-  path: '/api/auth/login',
-  method: 'POST',
-  headers: {
-    host: 'talkavax-production.up.railway.app',
-    'user-agent': 'curl/8.0.1',
-    'content-length': '43',
-    accept: '*/*',
-    'content-type': 'application/json',
-    'x-forwarded-for': '102.90.80.143',
-    'x-forwarded-host': 'talkavax-production.up.railway.app',
-    'x-forwarded-proto': 'https',
-    'x-railway-edge': 'railway/europe-west4-drams3a',
-    'x-railway-request-id': 'S2Cmb5yaRJ2WO69Lm3z_FQ',
-    'x-real-ip': '102.90.80.143',
-    'x-request-start': '1765266999787',
-    'accept-encoding': 'gzip'
-  }
-}
-    'x-real-ip': '102.90.80.143',
-    'x-request-start': '1765267721171',
-    'accept-encoding': 'gzip'
-  }
-}
-SERVER ERROR: ❌ JSON Parse Error: {
-  message: 'Unexpected token e in JSON at position 1',
-  body: '{email:admin@example.com,password:admin123}',
-  path: '/api/auth/login',
-  method: 'POST',
-  headers: {
-    host: 'talkavax-production.up.railway.app',
-    'user-agent': 'curl/8.0.1',
-    'content-length': '43',
-    accept: '*/*',
-    'content-type': 'application/json',
-    'x-forwarded-for': '102.90.80.143',
-    'x-forwarded-host': 'talkavax-production.up.railway.app',
-    'x-forwarded-proto': 'https',
-    'x-railway-edge': 'railway/europe-west4-drams3a',
-    'x-railway-request-id': '_gxxxy9yRpG6iU_arJsmnA',
-SERVER: [2025-12-09T08:09:43.757Z] GET /health
-SERVER ERROR: ❌ JSON Parse Error: {
-  message: "Unexpected token ' in JSON at position 0",
-  body: "'{email:admin@example.com,password:admin123}'",
-  path: '/api/auth/login',
-  method: 'POST',
-  headers: {
-    host: 'talkavax-production.up.railway.app',
-    'user-agent': 'curl/8.0.1',
-    'content-length': '45',
-    accept: '*/*',
-    'content-type': 'application/json',
-    'x-forwarded-for': '102.90.80.143',
-    'x-forwarded-host': 'talkavax-production.up.railway.app',
-    'x-forwarded-proto': 'https',
-    'x-railway-edge': 'railway/europe-west4-drams3a',
-    'x-railway-request-id': 'CUg8IDolTsKe4CyeN8N_Fg',
-    'x-real-ip': '102.90.80.143',
-    'x-request-start': '1765267962127',
-    'accept-encoding': 'gzip'
-  }
-}
-SERVER: [2025-12-09T08:12:50.587Z] POST /api/auth/login
-📋 Content-Type: application/json
-📏 Content-Length: 51
-SERVER: [2025-12-09T08:17:04.012Z] GET /health
-SERVER: [2025-12-09T08:29:56.762Z] POST /api/auth/login
-📋 Content-Type: application/json
-📏 Content-Length: 51
+context: k3tn-YQmn
+[internal] load build definition from Dockerfile
+[internal] load build definition from Dockerfile
+[internal] load build definition from Dockerfile
+[internal] load build definition from Dockerfile
+[internal] load metadata for docker.io/library/node:18-alpine
+[auth] library/node:pull token for registry-1.docker.io
+[auth] library/node:pull token for registry-1.docker.io
+[internal] load metadata for docker.io/library/node:18-alpine
+[internal] load .dockerignore
+[internal] load .dockerignore
+[internal] load .dockerignore
+[internal] load .dockerignore
+[production  6/17] COPY --from=backend-builder /app/backend ./backend
+[backend-builder 5/5] COPY backend/ ./
+[backend-builder 4/5] RUN npm ci --only=production
+[backend-builder 3/5] COPY backend/package*.json ./
+[internal] load build context
+[backend-builder 2/5] WORKDIR /app/backend
+[production  5/17] RUN adduser -S nextjs -u 1001
+[production  4/17] RUN addgroup -g 1001 -S nodejs
+[production  3/17] WORKDIR /app
+[production  2/17] RUN apk add --no-cache curl postgresql-client
+[frontend-builder 1/6] FROM docker.io/library/node:18-alpine@sha256:8d6421d663b4c28fd3ebc498332f249011d118945588d0a35cb9bc4b8ca09d9e
+[production  8/17] COPY package*.json ./
+[production  7/17] COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
+[frontend-builder 6/6] RUN npm run build
+[frontend-builder 5/6] COPY frontend/ ./
+[frontend-builder 4/6] RUN npm ci
+[frontend-builder 3/6] COPY frontend/package*.json ./
+[frontend-builder 2/6] WORKDIR /app/frontend
+[production 15/17] RUN npm ci --only=production
+[production 14/17] COPY fix-railway-db.js ./
+[production 13/17] COPY railway-final-start.js ./
+[production 12/17] COPY single-url-deploy-improved.js ./
+[production 11/17] COPY railway-startup.js ./
+[production 10/17] COPY ecosystem.config.js ./
+[production  9/17] COPY deploy.js ./
+[production 17/17] RUN chown -R nextjs:nodejs /app
+[production 16/17] RUN mkdir -p logs
+[internal] load build context
+[frontend-builder 1/6] FROM docker.io/library/node:18-alpine@sha256:8d6421d663b4c28fd3ebc498332f249011d118945588d0a35cb9bc4b8ca09d9e
+[frontend-builder 1/6] FROM docker.io/library/node:18-alpine@sha256:8d6421d663b4c28fd3ebc498332f249011d118945588d0a35cb9bc4b8ca09d9e
+[frontend-builder 1/6] FROM docker.io/library/node:18-alpine@sha256:8d6421d663b4c28fd3ebc498332f249011d118945588d0a35cb9bc4b8ca09d9e
+[frontend-builder 1/6] FROM docker.io/library/node:18-alpine@sha256:8d6421d663b4c28fd3ebc498332f249011d118945588d0a35cb9bc4b8ca09d9e
+[internal] load build context
+[frontend-builder 1/6] FROM docker.io/library/node:18-alpine@sha256:8d6421d663b4c28fd3ebc498332f249011d118945588d0a35cb9bc4b8ca09d9e
+[frontend-builder 1/6] FROM docker.io/library/node:18-alpine@sha256:8d6421d663b4c28fd3ebc498332f249011d118945588d0a35cb9bc4b8ca09d9e
+[internal] load build context
+[frontend-builder 1/6] FROM docker.io/library/node:18-alpine@sha256:8d6421d663b4c28fd3ebc498332f249011d118945588d0a35cb9bc4b8ca09d9e
+Deploy failed
