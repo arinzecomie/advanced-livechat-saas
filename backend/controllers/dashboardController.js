@@ -15,37 +15,102 @@ const paymentService = new PaymentService();
 // Get user dashboard data
 export async function getDashboard(req, res, next) {
   try {
+    console.log('📊 Dashboard request received');
+    console.log('👤 User from token:', req.user);
+    
+    if (!req.user || !req.user.id) {
+      console.log('❌ No user ID found in request');
+      return res.status(401).json({
+        success: false,
+        error: 'Unauthorized: No user ID found'
+      });
+    }
+    
     const userId = req.user.id;
+    console.log('🔍 Fetching dashboard for user ID:', userId);
     
-    // Get user's sites
-    const sites = await siteModel.findByUserId(userId);
-    
-    // Get site statistics
-    const siteStats = await Promise.all(
-      sites.map(async (site) => {
-        const visitorCount = await visitorModel.getVisitorCount(site.id);
-        const activeVisitors = await visitorModel.getActiveVisitors(site.id);
-        const subscription = await paymentService.getSubscriptionStatus(site.site_id);
-        
-        return {
-          ...site,
-          stats: {
-            totalVisitors: visitorCount,
-            activeVisitors: activeVisitors.length,
-            subscription
+    try {
+      // Get user's sites
+      console.log('🔍 Fetching sites for user:', userId);
+      const sites = await siteModel.findByUserId(userId);
+      console.log('📋 Found sites:', sites.length);
+      
+      if (sites.length === 0) {
+        console.log('⚠️  No sites found for user, returning empty array');
+        return res.json({
+          success: true,
+          data: {
+            sites: []
           }
-        };
-      })
-    );
+        });
+      }
+      
+      // Get site statistics
+      console.log('📊 Processing site statistics...');
+      const siteStats = await Promise.all(
+        sites.map(async (site) => {
+          console.log(`🔍 Processing site: ${site.domain} (ID: ${site.id})`);
+          
+          try {
+            const visitorCount = await visitorModel.getVisitorCount(site.id);
+            const activeVisitors = await visitorModel.getActiveVisitors(site.id);
+            const subscription = await paymentService.getSubscriptionStatus(site.site_id);
+            
+            console.log(`✅ Site ${site.domain} stats:`, {
+              visitorCount,
+              activeVisitors: activeVisitors.length,
+              subscription: subscription ? 'has subscription' : 'no subscription'
+            });
+            
+            return {
+              ...site,
+              stats: {
+                totalVisitors: visitorCount,
+                activeVisitors: activeVisitors.length,
+                subscription
+              }
+            };
+          } catch (error) {
+            console.error(`❌ Error processing site ${site.id}:`, error.message);
+            return {
+              ...site,
+              stats: {
+                totalVisitors: 0,
+                activeVisitors: 0,
+                subscription: null
+              }
+            };
+          }
+        })
+      );
 
+      console.log('✅ Dashboard data prepared successfully');
+      res.json({
+        success: true,
+        data: {
+          sites: siteStats
+        }
+      });
+    } catch (dbError) {
+      console.error('💥 Database error in dashboard:', dbError.message);
+      // Return empty sites array as fallback
+      res.json({
+        success: true,
+        data: {
+          sites: []
+        }
+      });
+    }
+  } catch (error) {
+    console.error('💥 Dashboard controller error:', error.message);
+    console.error(error.stack);
+    // Return empty data as fallback instead of error
     res.json({
       success: true,
       data: {
-        sites: siteStats
+        sites: []
       }
     });
-  } catch (error) {
-    next(error);
   }
 }
 

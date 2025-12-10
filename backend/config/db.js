@@ -82,10 +82,51 @@ const config = {
   }
 };
 
-// Create and export database instance
-const environment = process.env.NODE_ENV || 'development';
-const db = knex(config[environment]);
+// Create and export database instance - respect MySQL environment variables
+let db;
 
-console.log(`🔧 PostgreSQL configured for ${environment} environment`);
+// If FORCE_MYSQL is set, don't use PostgreSQL
+if (process.env.FORCE_MYSQL === 'true' || process.env.DISABLE_POSTGRESQL === 'true') {
+  console.log('🐬 PostgreSQL disabled by environment variables, skipping PostgreSQL initialization');
+  // Return a dummy object that will be replaced by the actual MySQL configuration
+  db = {
+    raw: () => Promise.resolve(),
+    select: () => ({ from: () => Promise.resolve([]) }),
+    insert: () => ({ into: () => Promise.resolve() }),
+    update: () => ({ table: () => Promise.resolve() }),
+    delete: () => ({ from: () => Promise.resolve() }),
+    schema: {
+      hasTable: () => Promise.resolve(false),
+      createTable: () => Promise.resolve()
+    }
+  };
+} else {
+  // Only initialize PostgreSQL if not disabled
+  const environment = process.env.NODE_ENV || 'development';
+  
+  // Check if we have the required PostgreSQL driver
+  try {
+    db = knex(config[environment]);
+    console.log(`🔧 PostgreSQL configured for ${environment} environment`);
+  } catch (error) {
+    if (error.message.includes("Cannot find module 'pg'")) {
+      console.log('🐬 PostgreSQL driver not available, skipping PostgreSQL initialization');
+      // Return a dummy object that will be replaced by the actual MySQL configuration
+      db = {
+        raw: () => Promise.resolve(),
+        select: () => ({ from: () => Promise.resolve([]) }),
+        insert: () => ({ into: () => Promise.resolve() }),
+        update: () => ({ table: () => Promise.resolve() }),
+        delete: () => ({ from: () => Promise.resolve() }),
+        schema: {
+          hasTable: () => Promise.resolve(false),
+          createTable: () => Promise.resolve()
+        }
+      };
+    } else {
+      throw error;
+    }
+  }
+}
 
 export default db;

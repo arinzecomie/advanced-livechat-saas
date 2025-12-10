@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CORS Test - Advanced Live Chat SaaS</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        .success { color: green; }
+        .error { color: red; }
+        .result { background: #f5f5f5; padding: 10px; margin: 10px 0; border-radius: 3px; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>🚀 CORS & API Test - Advanced Live Chat SaaS</h1>
+    
+    <div class="test-section">
+        <h2>Test 1: Simple Health Check</h2>
+        <button onclick="testHealth()">Test Health Endpoint</button>
+        <div id="health-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 2: Login API</h2>
+        <button onclick="testLogin()">Test Login API</button>
+        <div id="login-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 3: Register API</h2>
+        <button onclick="testRegister()">Test Register API</button>
+        <div id="register-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 4: Dashboard Access</h2>
+        <button onclick="testDashboard()">Test Dashboard Load</button>
+        <div id="dashboard-result" class="result"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://talkavax-production.up.railway.app';
+
+        function displayResult(elementId, data, isError = false) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+            element.className = isError ? 'result error' : 'result success';
+        }
+
+        // Test 1: Health Check
+        async function testHealth() {
+            try {
+                const response = await fetch(`${API_BASE}/health`);
+                const data = await response.json();
+                displayResult('health-result', { status: 'SUCCESS', data });
+            } catch (error) {
+                displayResult('health-result', { 
+                    status: 'ERROR', 
+                    message: error.message,
+                    type: error.name 
+                }, true);
+            }
+        }
+
+        // Test 2: Login API
+        async function testLogin() {
+            try {
+                const response = await fetch(`${API_BASE}/api/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: 'admin@example.com',
+                        password: 'admin123'
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                displayResult('login-result', { status: 'SUCCESS', data });
+            } catch (error) {
+                displayResult('login-result', { 
+                    status: 'ERROR', 
+                    message: error.message,
+                    type: error.name 
+                }, true);
+            }
+        }
+
+        // Test 3: Register API
+        async function testRegister() {
+            try {
+                const response = await fetch(`${API_BASE}/api/auth/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        name: 'Test User',
+                        email: 'test@example.com',
+                        password: 'test123'
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                displayResult('register-result', { status: 'SUCCESS', data });
+            } catch (error) {
+                displayResult('register-result', { 
+                    status: 'ERROR', 
+                    message: error.message,
+                    type: error.name 
+                }, true);
+            }
+        }
+
+        // Test 4: Dashboard Access
+        async function testDashboard() {
+            try {
+                const response = await fetch(`${API_BASE}/dashboard`, {
+                    method: 'GET'
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const html = await response.text();
+                displayResult('dashboard-result', { 
+                    status: 'SUCCESS', 
+                    htmlLength: html.length,
+                    contentPreview: html.substring(0, 200) + '...'
+                });
+            } catch (error) {
+                displayResult('dashboard-result', { 
+                    status: 'ERROR', 
+                    message: error.message,
+                    type: error.name 
+                }, true);
+            }
+        }
+
+        // Auto-run health check on load
+        window.addEventListener('load', () => {
+            console.log('🚀 CORS Test Page Loaded');
+            console.log('📍 API Base URL:', API_BASE);
+        });
+    </script>
+</body>
+</html>

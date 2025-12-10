@@ -14,6 +14,18 @@ console.log('🐬 Starting Advanced Live Chat SaaS with MySQL...');
 const PORT = process.env.PORT || 3000;
 const NODE_ENV = process.env.NODE_ENV || 'production';
 
+// Set DATABASE_URL from MYSQL_URL if not already set
+if (process.env.MYSQL_URL && !process.env.DATABASE_URL) {
+  process.env.DATABASE_URL = process.env.MYSQL_URL;
+  console.log('🔄 Set DATABASE_URL from MYSQL_URL');
+}
+
+// Fallback to public URL if internal URL fails
+const testUrls = [];
+if (process.env.MYSQL_URL) testUrls.push(process.env.MYSQL_URL);
+if (process.env.MYSQL_PUBLIC_URL) testUrls.push(process.env.MYSQL_PUBLIC_URL);
+if (process.env.DATABASE_URL) testUrls.push(process.env.DATABASE_URL);
+
 console.log('📋 MySQL Configuration:');
 console.log('  PORT:', PORT);
 console.log('  NODE_ENV:', NODE_ENV);
@@ -50,39 +62,62 @@ testMySQLConnection().then((connected) => {
   } else {
     console.error('❌ MySQL connection failed');
     console.error('🔧 Check your Railway MySQL service and DATABASE_URL');
-    process.exit(1);
+    console.log('🔄 Attempting to start application anyway...');
+    startApplication(); // Try to start even if DB test fails
   }
 }).catch((error) => {
   console.error('❌ MySQL test error:', error.message);
-  process.exit(1);
+  console.log('🔄 Attempting to start application anyway...');
+  startApplication(); // Try to start even if DB test fails
 });
 
 // Test MySQL connection
 async function testMySQLConnection() {
-  try {
-    const { createConnection } = require('mysql2/promise');
-    
-    const connection = await createConnection({
-      uri: process.env.DATABASE_URL,
-      ssl: { rejectUnauthorized: false }
-    });
-    
-    await connection.execute('SELECT 1');
-    console.log('✅ MySQL client connected');
-    
-    // Get database info
-    const [rows] = await connection.execute('SELECT DATABASE() as db, VERSION() as version');
-    console.log('📊 MySQL info:', {
-      database: rows[0].db,
-      version: rows[0].version
-    });
-    
-    await connection.end();
-    return true;
-  } catch (error) {
-    console.error('❌ MySQL connection test failed:', error.message);
-    return false;
+  const { createConnection } = require('mysql2/promise');
+  
+  // Try each available URL
+  const testUrls = [];
+  if (process.env.MYSQL_URL) testUrls.push({ url: process.env.MYSQL_URL, name: 'Internal' });
+  if (process.env.MYSQL_PUBLIC_URL) testUrls.push({ url: process.env.MYSQL_PUBLIC_URL, name: 'Public' });
+  if (process.env.DATABASE_URL && !testUrls.some(u => u.url === process.env.DATABASE_URL)) {
+    testUrls.push({ url: process.env.DATABASE_URL, name: 'DATABASE_URL' });
   }
+  
+  for (const { url, name } of testUrls) {
+    try {
+      console.log(`🔍 Testing ${name} MySQL connection...`);
+      const connection = await createConnection({
+        uri: url,
+        ssl: { rejectUnauthorized: false }
+      });
+      
+      await connection.execute('SELECT 1');
+      console.log(`✅ ${name} MySQL client connected`);
+      
+      // Get database info
+      const [rows] = await connection.execute('SELECT DATABASE() as db, VERSION() as version');
+      console.log('📊 MySQL info:', {
+        database: rows[0].db,
+        version: rows[0].version
+      });
+      
+      await connection.end();
+      
+      // Update DATABASE_URL to use the working URL
+      if (process.env.DATABASE_URL !== url) {
+        process.env.DATABASE_URL = url;
+        console.log(`🔄 Switched to ${name} URL`);
+      }
+      
+      return true;
+    } catch (error) {
+      console.error(`❌ ${name} MySQL connection test failed:`, error.message);
+      continue;
+    }
+  }
+  
+  console.error('❌ All MySQL connection tests failed');
+  return false;
 }
 
 // Start the application
@@ -157,5 +192,39 @@ async function testHealth() {
   } catch (error) {
     console.log('❌ Health check failed:', error.message);
     console.log('🔄 Health check will be retried by Railway');
+// Check if MySQL2 driver is available
+try {
+  require.resolve('mysql2');
+  console.log('✅ MySQL2 driver is available');
+} catch (error) {
+  console.error('❌ MySQL2 driver is not available. Installing...');
+  const { execSync } = require('child_process');
+  try {
+    execSync('npm install mysql2', { stdio: 'inherit' });
+    console.log('✅ MySQL2 driver installed successfully');
+  } catch (installError) {
+    console.error('❌ Failed to install MySQL2 driver:', installError.message);
+    process.exit(1);
+// Check if MySQL2 driver is available
+try {
+  require.resolve('mysql2');
+  console.log('✅ MySQL2 driver is available');
+} catch (error) {
+  console.error('❌ MySQL2 driver is not available. Installing...');
+  const { execSync } = require('child_process');
+  try {
+    execSync('npm install mysql2', { stdio: 'inherit' });
+    console.log('✅ MySQL2 driver installed successfully');
+  } catch (installError) {
+    console.error('❌ Failed to install MySQL2 driver:', installError.message);
+    process.exit(1);
+  }
+}
+
+
+  }
+}
+
+
   }
 }

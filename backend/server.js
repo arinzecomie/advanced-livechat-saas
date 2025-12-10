@@ -41,31 +41,89 @@ const io = new Server(httpServer, {
 
 const PORT = process.env.PORT || 3000;
 
-// Middleware
-app.use(cors());
-
-// Enhanced JSON parsing with error handling
-app.use(express.json({
-  limit: '10mb',
-  verify: (req, res, buf) => {
-    // Store raw body for debugging
-    req.rawBody = buf.toString();
-  }
+// Middleware - Enhanced CORS configuration
+app.use(cors({
+  origin: [
+    'https://talkavax-production.up.railway.app',
+    'http://localhost:3000',
+    'http://localhost:5173',
+    'http://localhost:5174'
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin']
 }));
 
-// JSON error handler
+// Additional CORS headers for better browser compatibility
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Expose-Headers', 'Authorization');
+  
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    res.header('Access-Control-Max-Age', '86400'); // 24 hours
+    return res.sendStatus(200);
+  }
+  
+  next();
+});
+
+// Enhanced JSON parsing with error handling - browser-friendly
+app.use(express.json({
+  limit: '10mb',
+  strict: false, // Allow non-strict JSON parsing
+  type: ['application/json', 'text/plain'] // Accept both JSON and plain text
+}));
+
+// Raw body parser for debugging
+app.use((req, res, next) => {
+  if (req.method === 'POST' || req.method === 'PUT' || req.method === 'PATCH') {
+    let data = '';
+    req.on('data', chunk => {
+      data += chunk;
+    });
+    req.on('end', () => {
+      req.rawBody = data;
+      console.log('📋 Raw request body:', data);
+      console.log('📊 Content-Type:', req.headers['content-type']);
+      console.log('📏 Content-Length:', req.headers['content-length']);
+      console.log('🌐 Origin:', req.headers.origin);
+      
+      // Try to parse JSON manually if express.json failed
+      if (req.headers['content-type']?.includes('application/json') && data) {
+        try {
+          req.body = JSON.parse(data);
+          console.log('✅ Manual JSON parsing successful');
+        } catch (e) {
+          console.log('❌ Manual JSON parsing failed:', e.message);
+        }
+      }
+    });
+  }
+  next();
+});
+
+// JSON error handler - enhanced debugging
 app.use((err, req, res, next) => {
   if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
-    console.error('❌ JSON Parse Error:', {
-      message: err.message,
-      body: req.rawBody,
+    console.error('❌ JSON Parse Error Details:', {
+      error: err.message,
+      rawBody: req.rawBody,
+      bodyLength: req.rawBody?.length,
+      contentType: req.headers['content-type'],
       path: req.path,
       method: req.method,
-      headers: req.headers
+      userAgent: req.headers['user-agent']
     });
+    
     return res.status(400).json({ 
       error: 'Invalid JSON format',
-      message: 'Please check your request body format'
+      message: 'Please check your request body format',
+      debug: {
+        receivedBody: req.rawBody,
+        contentType: req.headers['content-type'],
+        errorDetails: err.message
+      }
     });
   }
   next();
@@ -141,6 +199,14 @@ app.use('/dashboard', express.static(path.join(__dirname, '../frontend/dist')));
 
 // Catch-all handler for React Router
 app.get('/dashboard/*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../frontend/dist', 'index.html'));
+});
+
+// Serve frontend landing page at root
+app.use('/', express.static(path.join(__dirname, '../frontend/dist')));
+
+// Catch-all handler for React Router - serve index.html for all other routes
+app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/dist', 'index.html'));
 });
 

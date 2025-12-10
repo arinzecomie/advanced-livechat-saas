@@ -5,7 +5,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useChatStore } from '../../stores'
 
-const ChatPanel = ({ siteId, sessionId, serverUrl = 'http://localhost:3000' }) => {
+const ChatPanel = ({ siteId, sessionId, serverUrl = 'https://talkavax-production.up.railway.app' }) => {
   const [message, setMessage] = useState('')
   const [isTyping, setIsTyping] = useState(false)
   const messagesEndRef = useRef(null)

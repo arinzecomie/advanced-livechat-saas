@@ -1,106 +1,102 @@
-PS C:\Users\Kizito\livechatwithreact\advanced-livechat-saas> del railway.toml
-PS C:\Users\Kizito\livechatwithreact\advanced-livechat-saas> railway variables
-╔═══════════════════════════ Variables for talkavax ═══════════════════════════╗
-║ CORS_ORIGIN                  │ *                                             ║
-║──────────────────────────────────────────────────────────────────────────────║
-║ FORCE_MYSQL                  │ true                                          ║
-║──────────────────────────────────────────────────────────────────────────────║
-║ JWT_SECRET                   │ gQfuUMqqT52JnE6qeKv5                          ║
-║──────────────────────────────────────────────────────────────────────────────║
-║ MONGO_URI                    │ mongodb+srv://                                ║
-║                              │ arinzeezeozue_db_user:PByZWA70QmruZIC9@usersc ║
-║                              │ hat.tjk5ezx.mongodb.net/advanced-livechat?    ║
-║                              │ appName=Userschat                             ║
-║──────────────────────────────────────────────────────────────────────────────║
-║ MYSQL_DATABASE               │ railway                                       ║
-║──────────────────────────────────────────────────────────────────────────────║
-║ MYSQL_URL                    │ mysql://                                      ║
-║                              │ root:gwoSTNxPDOeDqdzSmaGEViMUPpvqNsIu@mysql.r ║
-║                              │ ailway.internal:3306/railway                  ║
-║──────────────────────────────────────────────────────────────────────────────║
-║ NODE_ENV                     │ production                                    ║
-║──────────────────────────────────────────────────────────────────────────────║
-║ PORT                         │ 3000                                          ║
-║──────────────────────────────────────────────────────────────────────────────║
-║ RAILWAY_ENVIRONMENT          │ production                                    ║
-║──────────────────────────────────────────────────────────────────────────────║
-║ RAILWAY_ENVIRONMENT_ID       │ a22e2068-2711-47a9-8394-8ae873ab971d          ║
-║──────────────────────────────────────────────────────────────────────────────║
-║ RAILWAY_ENVIRONMENT_NAME     │ production                                    ║
-║──────────────────────────────────────────────────────────────────────────────║
-║ RAILWAY_PRIVATE_DOMAIN       │ talkavax.railway.internal                     ║
-║──────────────────────────────────────────────────────────────────────────────║
-║ RAILWAY_PROJECT_ID           │ c66a41be-9633-4791-a1c0-188ce1b5ec0b          ║
-║──────────────────────────────────────────────────────────────────────────────║
-║ RAILWAY_PROJECT_NAME         │ talkavax                                      ║
-║──────────────────────────────────────────────────────────────────────────────║
-║ RAILWAY_PUBLIC_DOMAIN        │ talkavax-production.up.railway.app            ║
-║──────────────────────────────────────────────────────────────────────────────║
-║ RAILWAY_SERVICE_ID           │ 4553cba6-6121-4b1c-8c69-153db4ce34dd          ║
-║──────────────────────────────────────────────────────────────────────────────║
-║ RAILWAY_SERVICE_NAME         │ talkavax                                      ║
-║──────────────────────────────────────────────────────────────────────────────║
-║ RAILWAY_SERVICE_TALKAVAX_URL │ talkavax-production.up.railway.app            ║
-║──────────────────────────────────────────────────────────────────────────────║
-║ RAILWAY_STATIC_URL           │ talkavax-production.up.railway.app            ║
-╚══════════════════════════════════════════════════════════════════════════════╝
+PS C:\Users\Kizito\livechatwithreact\advanced-livechat-saas> Set-Content -Path test-login.json -Value '{"email":"admin@example.com","password":"admin123"}' -Encoding utf8
+PS C:\Users\Kizito\livechatwithreact\advanced-livechat-saas> curl.exe -X POST "https://talkavax-production.up.railway.app/api/auth/login" `
+>>   -H "Content-Type: application/json" `
+>>   --data-binary @test-login.json
+{"success":true,"data":{"user":{"id":1,"email":"admin@example.com","name":"Admin User","role":"admin"},"sites":[{"id":"demo-site-id","domain":"demo-site.com","status":"active"},{"id":"suspended-site-id","domain":"suspended-site.com","status":"suspended"},{"id":"demo-site-id","domain":"demo-site.com","status":"active"},{"id":"suspended-site-id","domain":"suspended-site.com","status":"suspended"},{"id":"demo-site-id","domain":"demo-site.com","status":"active"},{"id":"suspended-site-id","domain":"suspended-site.com","status":"suspended"},{"id":"demo-site-id","domain":"demo-site.com","status":"active"},{"id":"suspended-site-id","domain":"suspended-site.com","status":"suspended"},{"id":"demo-site-id","domain":"demo-site.com","status":"active"},{"id":"suspended-site-id","domain":"suspended-site.com","status":"suspended"},{"id":"demo-site-id","domain":"demo-site.com","status":"active"},{"id":"suspended-site-id","domain":"suspended-site.com","status":"suspended"},{"id":"demo-site-id","domain":"demo-site.com","status":"active"},{"id":"suspended-site-id","domain":"suspended-site.com","status":"suspended"},{"id":"demo-site-id","domain":"demo-site.com","status":"active"},{"id":"suspended-site-id","domain":"suspended-site.com","status":"suspended"},{"id":"demo-site-id","domain":"demo-site.com","status":"active"},{"id":"suspended-site-id","domain":"suspended-site.com","status":"suspended"},{"id":"demo-site-id","domain":"demo-site.com","status":"active"},{"id":"suspended-site-id","domain":"suspended-site.com","status":"suspended"},{"id":"demo-site-id","domain":"demo-site.com","status":"active"},{"id":"suspended-site-id","domain":"suspended-site.com","status":"suspended"}],"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc2NTM5Njc3MywiZXhwIjoxNzY2MDAxNTczfQ.SRvU736pQz_RBBPwV7mZsClRTchBJEGphPxe3X0hJKc"}}
+PS C:\Users\Kizito\livechatwithreact\advanced-livechat-saas> railway logs
+Starting Container
 
-PS C:\Users\Kizito\livechatwithreact\advanced-livechat-saas> railway up
-  Indexed                                                                                                                 Compressed [====================] 100%                                                                                  Uploaded                                                                                                                Build Logs: https://railway.com/project/c66a41be-9633-4791-a1c0-188ce1b5ec0b/service/4553cba6-6121-4b1c-8c69-153db4ce34dd?id=fccaffaf-92eb-492d-912b-a85a1cebe0f7&
+> advanced-livechat-saas@1.0.0 start:railway:mysql
+> node railway-mysql-start.js
 
-[Region: asia-southeast1]
-=========================
-Using Detected Dockerfile
-=========================
+🐬 Starting Advanced Live Chat SaaS with MySQL...
+🔄 Set DATABASE_URL from MYSQL_URL
+📋 MySQL Configuration:
+  PORT: 3000
+  NODE_ENV: production
+  DATABASE_URL: SET (hidden)
+  MONGO_URI: SET (hidden)
+✅ MySQL environment configured
 
-context: k3tn-YQmn
-[internal] load build definition from Dockerfile
-[internal] load build definition from Dockerfile
-[internal] load build definition from Dockerfile
-[internal] load build definition from Dockerfile
-[internal] load metadata for docker.io/library/node:18-alpine
-[auth] library/node:pull token for registry-1.docker.io
-[auth] library/node:pull token for registry-1.docker.io
-[internal] load metadata for docker.io/library/node:18-alpine
-[internal] load .dockerignore
-[internal] load .dockerignore
-[internal] load .dockerignore
-[internal] load .dockerignore
-[production  6/17] COPY --from=backend-builder /app/backend ./backend
-[backend-builder 5/5] COPY backend/ ./
-[backend-builder 4/5] RUN npm ci --only=production
-[backend-builder 3/5] COPY backend/package*.json ./
-[internal] load build context
-[backend-builder 2/5] WORKDIR /app/backend
-[production  5/17] RUN adduser -S nextjs -u 1001
-[production  4/17] RUN addgroup -g 1001 -S nodejs
-[production  3/17] WORKDIR /app
-[production  2/17] RUN apk add --no-cache curl postgresql-client
-[frontend-builder 1/6] FROM docker.io/library/node:18-alpine@sha256:8d6421d663b4c28fd3ebc498332f249011d118945588d0a35cb9bc4b8ca09d9e
-[production  8/17] COPY package*.json ./
-[production  7/17] COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
-[frontend-builder 6/6] RUN npm run build
-[frontend-builder 5/6] COPY frontend/ ./
-[frontend-builder 4/6] RUN npm ci
-[frontend-builder 3/6] COPY frontend/package*.json ./
-[frontend-builder 2/6] WORKDIR /app/frontend
-[production 15/17] RUN npm ci --only=production
-[production 14/17] COPY fix-railway-db.js ./
-[production 13/17] COPY railway-final-start.js ./
-[production 12/17] COPY single-url-deploy-improved.js ./
-[production 11/17] COPY railway-startup.js ./
-[production 10/17] COPY ecosystem.config.js ./
-[production  9/17] COPY deploy.js ./
-[production 17/17] RUN chown -R nextjs:nodejs /app
-[production 16/17] RUN mkdir -p logs
-[internal] load build context
-[frontend-builder 1/6] FROM docker.io/library/node:18-alpine@sha256:8d6421d663b4c28fd3ebc498332f249011d118945588d0a35cb9bc4b8ca09d9e
-[frontend-builder 1/6] FROM docker.io/library/node:18-alpine@sha256:8d6421d663b4c28fd3ebc498332f249011d118945588d0a35cb9bc4b8ca09d9e
-[frontend-builder 1/6] FROM docker.io/library/node:18-alpine@sha256:8d6421d663b4c28fd3ebc498332f249011d118945588d0a35cb9bc4b8ca09d9e
-[frontend-builder 1/6] FROM docker.io/library/node:18-alpine@sha256:8d6421d663b4c28fd3ebc498332f249011d118945588d0a35cb9bc4b8ca09d9e
-[internal] load build context
-[frontend-builder 1/6] FROM docker.io/library/node:18-alpine@sha256:8d6421d663b4c28fd3ebc498332f249011d118945588d0a35cb9bc4b8ca09d9e
-[frontend-builder 1/6] FROM docker.io/library/node:18-alpine@sha256:8d6421d663b4c28fd3ebc498332f249011d118945588d0a35cb9bc4b8ca09d9e
-[internal] load build context
-[frontend-builder 1/6] FROM docker.io/library/node:18-alpine@sha256:8d6421d663b4c28fd3ebc498332f249011d118945588d0a35cb9bc4b8ca09d9e
-Deploy failed
+🧪 Testing MySQL connection...
+🔍 Testing Internal MySQL connection...
+✅ Internal MySQL client connected
+📊 MySQL info: { database: 'railway', version: '9.4.0' }
+✅ MySQL connection successful
+
+🎯 Starting backend server with MySQL...
+SERVER: 🐬 PostgreSQL disabled by environment variables, skipping PostgreSQL initialization
+SERVER: 🔄 Connecting to MongoDB...
+SERVER: 🐬 FORCE_MYSQL detected, using MySQL exclusively
+SERVER: ✅ MySQL database loaded for models (forced)
+✅ Database provider initialized with mysql
+SERVER: 🚀 Advanced Live Chat SaaS server running on port 3000
+📊 Dashboard: http://localhost:3000/dashboard
+🎯 Demo page: http://localhost:3000/demo.html
+✅ MySQL server appears to be running
+✅ MySQL server appears to be running
+SERVER: 🔧 Initializing MySQL database...
+SERVER: ✅ MySQL database connected
+SERVER: 📊 Current tables: [ undefined, undefined, undefined, undefined ]
+SERVER: ✅ users table exists
+SERVER: ✅ sites table exists
+SERVER: ✅ visitors table exists
+SERVER: ✅ payments table exists
+SERVER: 👤 Inserting default MySQL users...
+SERVER: ✅ Default MySQL users inserted
+🎉 MySQL initialization completed!
+SERVER: [2025-12-10T19:58:06.126Z] GET /health
+SERVER: ✅ MongoDB connected successfully to Atlas!
+📊 Database: advanced-livechat
+SERVER: ✅ MongoDB connection verified
+🔧 Creating indexes...
+SERVER: ✅ Indexes created successfully
+SERVER: 📋 MongoDB Version: 8.0.16
+SERVER: 🏠 Host: ac-xgidsaq-shard-00-02.tjk5ezx.mongodb.net:27017
+SERVER: [2025-12-10T19:58:10.589Z] GET /health
+✅ MySQL health check passed: {
+  status: 'ok',
+  timestamp: '2025-12-10T19:58:10.590Z',
+  database: 'mysql',
+  mongodb: 'configured'
+}
+🎉 MySQL application ready at http://localhost:3000
+🌐 Health endpoint: http://localhost:3000/health
+🎯 Test credentials: admin@example.com / admin123
+SERVER: [2025-12-10T19:58:10.628Z] GET /health
+✅ MySQL health check passed: {
+  status: 'ok',
+  timestamp: '2025-12-10T19:58:10.628Z',
+  database: 'mysql',
+  mongodb: 'configured'
+}
+🎉 MySQL application ready at http://localhost:3000
+🌐 Health endpoint: http://localhost:3000/health
+🎯 Test credentials: admin@example.com / admin123
+SERVER: [2025-12-10T19:58:27.963Z] POST /api/auth/login
+📋 Content-Type: application/json
+📏 Content-Length: 51
+SERVER: [2025-12-10T19:58:28.645Z] GET /vite.svg
+SERVER: [2025-12-10T19:58:28.799Z] GET /vite.svg
+SERVER: [2025-12-10T19:59:33.048Z] POST /api/auth/login
+📋 Content-Type: application/json
+📏 Content-Length: 56
+SERVER: [2025-12-10T20:01:19.605Z] POST /api/auth/login
+📋 Content-Type: application/json
+📏 Content-Length: 51
+SERVER: [2025-12-10T20:01:20.319Z] GET /vite.svg
+SERVER: [2025-12-10T20:01:26.388Z] GET /vite.svg
+SERVER: [2025-12-10T20:01:57.515Z] POST /api/auth/register
+📋 Content-Type: application/json
+📏 Content-Length: 71
+SERVER ERROR: ❌ Error: Error: User already exists
+    at AuthService.register (file:///app/backend/services/AuthService.js:22:13)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async register (file:///app/backend/controllers/authController.js:21:20)
+SERVER: [2025-12-10T20:03:04.504Z] GET /vite.svg
+SERVER: [2025-12-10T20:03:25.367Z] POST /api/auth/login
+📋 Content-Type: application/json
+📏 Content-Length: 51
+SERVER: [2025-12-10T20:03:26.095Z] GET /vite.svg
+SERVER: [2025-12-10T20:03:26.254Z] GET /vite.svg
+PS C:\Users\Kizito\

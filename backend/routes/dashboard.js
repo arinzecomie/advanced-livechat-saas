@@ -23,6 +23,9 @@ router.use(authGuard);
 // Dashboard overview
 router.get('/', getDashboard);
 
+// Get all user's sites
+router.get('/sites', getDashboard);
+
 // Site-specific routes
 router.get('/sites/:siteId/analytics', checkSiteOwnership, getSiteAnalytics);
 router.get('/sites/:siteId/visitors', checkSiteOwnership, getSiteVisitors);

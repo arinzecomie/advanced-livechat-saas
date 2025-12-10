@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Final Deployment Test - Frontend API Connection</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-result { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        button { padding: 10px 20px; margin: 10px 0; cursor: pointer; }
+        #results { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>🚀 Final Deployment Test</h1>
+    <p>This test will verify that the frontend is properly connected to the backend API.</p>
+    
+    <button onclick="runAllTests()">Run All Tests</button>
+    <button onclick="testLogin()">Test Login Only</button>
+    
+    <div id="results"></div>
+
+    <script>
+        const API_URL = 'https://talkavax-production.up.railway.app/api';
+        const resultsDiv = document.getElementById('results');
+
+        function addResult(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.innerHTML = message;
+            resultsDiv.appendChild(div);
+        }
+
+        function clearResults() {
+            resultsDiv.innerHTML = '';
+        }
+
+        async function testHealth() {
+            try {
+                const response = await fetch(`${API_URL}/health`);
+                const data = await response.json();
+                
+                if (response.ok && data.status === 'ok') {
+                    addResult('✅ Health Check: Backend is healthy', 'success');
+                    return true;
+                } else {
+                    addResult(`❌ Health Check: ${data.status}`, 'error');
+                    return false;
+                }
+            } catch (error) {
+                addResult(`❌ Health Check Error: ${error.message}`, 'error');
+                return false;
+            }
+        }
+
+        async function testCors() {
+            try {
+                const response = await fetch(`${API_URL}/auth/login`, {
+                    method: 'OPTIONS',
+                    headers: {
+                        'Origin': window.location.origin,
+                        'Access-Control-Request-Method': 'POST',
+                        'Access-Control-Request-Headers': 'content-type'
+                    }
+                });
+
+                if (response.status === 204) {
+                    addResult('✅ CORS Preflight: Successful', 'success');
+                    return true;
+                } else {
+                    addResult(`❌ CORS Preflight: ${response.status}`, 'error');
+                    return false;
+                }
+            } catch (error) {
+                addResult(`❌ CORS Error: ${error.message}`, 'error');
+                return false;
+            }
+        }
+
+        async function testLogin() {
+            try {
+                addResult('🔄 Testing login with demo credentials...');
+                
+                const response = await fetch(`${API_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Origin': window.location.origin
+                    },
+                    body: JSON.stringify({
+                        email: 'admin@example.com',
+                        password: 'admin123'
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    addResult('✅ Login Test: Successful', 'success');
+                    addResult(`👤 User: ${data.data.user.name} (${data.data.user.role})`, 'info');
+                    addResult(`🔑 Token: ${data.data.token ? 'Received' : 'Not received'}`, 'info');
+                    addResult(`🏢 Sites: ${data.data.sites.length} sites loaded`, 'info');
+                    return true;
+                } else {
+                    addResult(`❌ Login Test: ${data.message || 'Failed'}`, 'error');
+                    return false;
+                }
+            } catch (error) {
+                addResult(`❌ Login Error: ${error.message}`, 'error');
+                console.error('Login error details:', error);
+                return false;
+            }
+        }
+
+        async function testFrontendConnection() {
+            try {
+                // Test if we can make a request from the current domain
+                const response = await fetch(`${API_URL}/health`, {
+                    headers: {
+                        'Origin': window.location.origin
+                    }
+                });
+
+                if (response.ok) {
+                    addResult('✅ Frontend Connection: API reachable from browser', 'success');
+                    return true;
+                } else {
+                    addResult(`❌ Frontend Connection: ${response.status}`, 'error');
+                    return false;
+                }
+            } catch (error) {
+                addResult(`❌ Frontend Connection Error: ${error.message}`, 'error');
+                return false;
+            }
+        }
+
+        async function runAllTests() {
+            clearResults();
+            addResult('🚀 Starting comprehensive frontend API connection test...');
+            
+            const tests = [
+                { name: 'Health Check', func: testHealth },
+                { name: 'CORS Test', func: testCors },
+                { name: 'Frontend Connection', func: testFrontendConnection },
+                { name: 'Login Test', func: testLogin }
+            ];
+
+            let passed = 0;
+            let total = tests.length;
+
+            for (const test of tests) {
+                addResult(`\n📋 Running: ${test.name}`);
+                const result = await test.func();
+                if (result) passed++;
+                
+                // Small delay between tests
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+
+            addResult(`\n📊 Test Results: ${passed}/${total} tests passed`, 
+                     passed === total ? 'success' : 'error');
+
+            if (passed === total) {
+                addResult('🎉 All tests passed! Frontend is properly connected to backend API.', 'success');
+                addResult('💡 You can now test the actual login/signup functionality in the React application.', 'info');
+            } else {
+                addResult('⚠️  Some tests failed. Check the details above and ensure the deployment is complete.', 'error');
+            }
+        }
+
+        // Auto-run tests on page load
+        window.addEventListener('load', () => {
+            addResult('🎯 Test page loaded. Click "Run All Tests" to verify frontend API connection.');
+        });
+    </script>
+</body>
+</html>

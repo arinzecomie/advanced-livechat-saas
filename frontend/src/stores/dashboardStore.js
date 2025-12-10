@@ -64,7 +64,7 @@ const useDashboardStore = create(
           throw new Error('No authentication token')
         }
 
-        const response = await fetch('http://localhost:3000/api/dashboard/sites', {
+        const response = await fetch('https://talkavax-production.up.railway.app/api/dashboard/', {
           headers: {
             'Authorization': `Bearer ${token}`,
           },
@@ -75,7 +75,7 @@ const useDashboardStore = create(
         }
 
         const data = await response.json()
-        setSites(data.sites || [])
+        setSites(data.data.sites || [])
         
         return { success: true, data }
       } catch (error) {
@@ -98,7 +98,7 @@ const useDashboardStore = create(
           throw new Error('No authentication token')
         }
 
-        const response = await fetch(`http://localhost:3000/api/dashboard/sites/${siteId}/analytics`, {
+        const response = await fetch(`https://talkavax-production.up.railway.app/api/dashboard/sites/${siteId}/analytics`, {
           headers: {
             'Authorization': `Bearer ${token}`,
           },
@@ -140,7 +140,7 @@ const useDashboardStore = create(
           throw new Error('No authentication token')
         }
 
-        const response = await fetch(`http://localhost:3000/api/dashboard/sites/${siteId}/visitors`, {
+        const response = await fetch(`https://talkavax-production.up.railway.app/api/dashboard/sites/${siteId}/visitors`, {
           headers: {
             'Authorization': `Bearer ${token}`,
           },
@@ -174,7 +174,7 @@ const useDashboardStore = create(
           throw new Error('No authentication token')
         }
 
-        const response = await fetch(`http://localhost:3000/api/dashboard/sites/${siteId}/messages`, {
+        const response = await fetch(`https://talkavax-production.up.railway.app/api/dashboard/sites/${siteId}/messages`, {
           headers: {
             'Authorization': `Bearer ${token}`,
           },
@@ -208,7 +208,7 @@ const useDashboardStore = create(
           throw new Error('No authentication token')
         }
 
-        const response = await fetch('http://localhost:3000/api/dashboard/sites', {
+        const response = await fetch('https://talkavax-production.up.railway.app/api/dashboard/sites', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -247,7 +247,7 @@ const useDashboardStore = create(
           throw new Error('No authentication token')
         }
 
-        const response = await fetch(`http://localhost:3000/api/dashboard/sites/${siteId}`, {
+        const response = await fetch(`https://talkavax-production.up.railway.app/api/dashboard/sites/${siteId}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -286,7 +286,7 @@ const useDashboardStore = create(
           throw new Error('No authentication token')
         }
 
-        const response = await fetch(`http://localhost:3000/api/dashboard/sites/${siteId}`, {
+        const response = await fetch(`https://talkavax-production.up.railway.app/api/dashboard/sites/${siteId}`, {
           method: 'DELETE',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -322,7 +322,7 @@ const useDashboardStore = create(
           throw new Error('No authentication token')
         }
 
-        const response = await fetch('http://localhost:3000/api/admin/stats', {
+        const response = await fetch('https://talkavax-production.up.railway.app/api/admin/stats', {
           headers: {
             'Authorization': `Bearer ${token}`,
           },

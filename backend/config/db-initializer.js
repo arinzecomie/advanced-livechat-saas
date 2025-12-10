@@ -15,6 +15,50 @@ export async function initializeDatabase() {
   
   console.log('🔧 Initializing database...');
   console.log('📊 DATABASE_URL:', databaseUrl ? 'SET' : 'NOT SET');
+  console.log('🐬 FORCE_MYSQL:', process.env.FORCE_MYSQL);
+  console.log('🐘 FORCE_POSTGRESQL:', process.env.FORCE_POSTGRESQL);
+  
+  // If FORCE_MYSQL is set, use MySQL
+  if (process.env.FORCE_MYSQL === 'true') {
+    console.log('🐬 Using MySQL (forced)');
+    try {
+      const db = await import('./db-mysql.js');
+      console.log('✅ MySQL database initialized');
+      return { db, type: 'mysql' };
+    } catch (error) {
+      console.error('❌ MySQL initialization failed:', error.message);
+      console.log('💾 Falling back to SQLite...');
+      return await initializeSQLite();
+    }
+  }
+  
+  // If DATABASE_URL is set and looks like MySQL, use MySQL
+  if (databaseUrl && databaseUrl.startsWith('mysql://')) {
+    console.log('🐬 Using MySQL with DATABASE_URL');
+    try {
+      const db = await import('./db-mysql.js');
+      console.log('✅ MySQL database initialized');
+      return { db, type: 'mysql' };
+    } catch (error) {
+      console.error('❌ MySQL initialization failed:', error.message);
+      console.log('💾 Falling back to SQLite...');
+      return await initializeSQLite();
+    }
+  }
+  
+  // If MYSQL_URL is set, use MySQL
+  if (process.env.MYSQL_URL) {
+    console.log('🐬 Using MySQL with MYSQL_URL');
+    try {
+      const db = await import('./db-mysql.js');
+      console.log('✅ MySQL database initialized');
+      return { db, type: 'mysql' };
+    } catch (error) {
+      console.error('❌ MySQL initialization failed:', error.message);
+      console.log('💾 Falling back to SQLite...');
+      return await initializeSQLite();
+    }
+  }
   
   // If DATABASE_URL is set and looks like PostgreSQL, use PostgreSQL
   if (databaseUrl && databaseUrl.startsWith('postgresql://')) {

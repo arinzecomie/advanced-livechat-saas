@@ -52,7 +52,7 @@ const useChatStore = create(
     }),
 
     // Chat actions
-    initializeSocket: (siteId, serverUrl = 'http://localhost:3000') => {
+    initializeSocket: (siteId, serverUrl = 'https://talkavax-production.up.railway.app') => {
       const { setSocket, setConnectionStatus, handleSocketEvents } = get()
       
       if (get().socket) {
@@ -141,7 +141,7 @@ const useChatStore = create(
     },
 
     // Widget initialization
-    initializeWidget: async (siteId, serverUrl = 'http://localhost:3000') => {
+    initializeWidget: async (siteId, serverUrl = 'https://talkavax-production.up.railway.app') => {
       const { setLoading, setError, setCurrentSession, setSiteConfig, initializeSocket } = get()
       
       try {
@@ -199,7 +199,7 @@ const useChatStore = create(
         setLoading(true)
         setError(null)
 
-        const response = await fetch(`http://localhost:3000/api/messages/${siteId}/${sessionId}`)
+        const response = await fetch(`https://talkavax-production.up.railway.app/api/messages/${siteId}/${sessionId}`)
         
         if (!response.ok) {
           throw new Error('Failed to load messages')

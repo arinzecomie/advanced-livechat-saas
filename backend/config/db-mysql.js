@@ -127,7 +127,7 @@ async function initializeMySQL() {
       table.enum('plan', ['free', 'pro', 'enterprise']).defaultTo('free');
       table.string('avatar_url', 500);
       table.string('avatar_public_id', 255);
-      table.json('notification_settings').defaultTo('{}');
+      table.json('notification_settings');
       table.timestamps(true, true);
     });
     
@@ -154,8 +154,8 @@ async function initializeMySQL() {
       table.string('timezone', 50);
       table.string('coordinates', 50);
       table.text('user_agent');
-      table.json('device_info').defaultTo('{}');
-      table.json('last_pages').defaultTo('[]');
+      table.json('device_info');
+      table.json('last_pages');
       table.string('session_token', 64);
       table.string('current_page', 500);
       table.timestamp('last_seen');
@@ -205,7 +205,7 @@ async function insertDefaultUsers() {
   try {
     console.log('👤 Inserting default MySQL users...');
     
-    const bcrypt = await import('bcryptjs');
+    const bcrypt = (await import('bcryptjs')).default;
     const adminPassword = bcrypt.hashSync('admin123', 10);
     const userPassword = bcrypt.hashSync('user123', 10);
     

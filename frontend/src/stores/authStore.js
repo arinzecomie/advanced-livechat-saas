@@ -41,7 +41,7 @@ const useAuthStore = create(
         setLoading(true)
         setError(null)
 
-        const response = await fetch('http://localhost:3000/api/auth/login', {
+        const response = await fetch('https://talkavax-production.up.railway.app/api/auth/login', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -83,7 +83,7 @@ const useAuthStore = create(
         setLoading(true)
         setError(null)
 
-        const response = await fetch('http://localhost:3000/api/auth/profile', {
+        const response = await fetch('https://talkavax-production.up.railway.app/api/auth/profile', {
           headers: {
             'Authorization': `Bearer ${token}`,
           },

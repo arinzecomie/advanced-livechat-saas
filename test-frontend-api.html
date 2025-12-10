@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Frontend API Connection</title>
+</head>
+<body>
+    <h1>Frontend API Connection Test</h1>
+    <div id="results"></div>
+    
+    <script>
+        const results = document.getElementById('results');
+        const apiUrl = 'https://talkavax-production.up.railway.app/api';
+        
+        async function testApiConnection() {
+            try {
+                // Test health endpoint
+                results.innerHTML += '<p>Testing health endpoint...</p>';
+                const healthResponse = await fetch(`${apiUrl}/health`);
+                const healthData = await healthResponse.json();
+                results.innerHTML += `<p>Health: ${JSON.stringify(healthData)}</p>`;
+                
+                // Test login endpoint
+                results.innerHTML += '<p>Testing login endpoint...</p>';
+                const loginResponse = await fetch(`${apiUrl}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: 'admin@example.com',
+                        password: 'admin123'
+                    })
+                });
+                
+                if (loginResponse.ok) {
+                    const loginData = await loginResponse.json();
+                    results.innerHTML += `<p style="color: green;">✅ Login successful: ${loginData.success}</p>`;
+                    results.innerHTML += `<p>Token received: ${loginData.data.token ? 'Yes' : 'No'}</p>`;
+                } else {
+                    const errorData = await loginResponse.json();
+                    results.innerHTML += `<p style="color: red;">❌ Login failed: ${errorData.message || loginResponse.statusText}</p>`;
+                }
+                
+            } catch (error) {
+                results.innerHTML += `<p style="color: red;">❌ Error: ${error.message}</p>`;
+                console.error('Full error:', error);
+            }
+        }
+        
+        // Also test CORS preflight
+        async function testCors() {
+            try {
+                results.innerHTML += '<p>Testing CORS preflight...</p>';
+                const corsResponse = await fetch(`${apiUrl}/auth/login`, {
+                    method: 'OPTIONS',
+                    headers: {
+                        'Access-Control-Request-Method': 'POST',
+                        'Access-Control-Request-Headers': 'content-type',
+                        'Origin': window.location.origin
+                    }
+                });
+                
+                results.innerHTML += `<p>CORS preflight status: ${corsResponse.status}</p>`;
+                results.innerHTML += `<p>CORS headers: ${corsResponse.headers.get('Access-Control-Allow-Origin')}</p>`;
+                
+            } catch (error) {
+                results.innerHTML += `<p style="color: red;">❌ CORS error: ${error.message}</p>`;
+            }
+        }
+        
+        testApiConnection();
+        testCors();
+    </script>
+</body>
+</html>

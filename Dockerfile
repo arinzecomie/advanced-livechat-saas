@@ -45,14 +45,10 @@ COPY --from=backend-builder /app/backend ./backend
 # Copy frontend build files
 COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
 
-# Copy root package files
+# Copy root package files and deployment scripts
 COPY package*.json ./
-COPY deploy.js ./
-COPY ecosystem.config.js ./
-COPY railway-startup.js ./
-COPY single-url-deploy-improved.js ./
-COPY railway-final-start.js ./
-COPY fix-railway-db.js ./
+COPY railway-mysql-start.js ./
+COPY network-test.js ./
 
 # Install production dependencies
 RUN npm ci --only=production
@@ -73,5 +69,5 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:3000/health || exit 1
 
-# Start the application for Railway
-CMD ["npm", "run", "start:railway"]
+# Start the application for Railway (MySQL version)
+CMD ["npm", "run", "start:railway:mysql"]
