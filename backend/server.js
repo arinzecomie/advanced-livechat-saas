@@ -131,14 +131,22 @@ app.use((err, req, res, next) => {
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Request logging middleware
+// Enhanced request logging middleware
 app.use((req, res, next) => {
   console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
+  console.log(`  Headers: ${JSON.stringify(req.headers, null, 2).substring(0, 200)}...`);
   
   // Log important request info
   if (req.method === 'POST' || req.method === 'PUT') {
     console.log('📋 Content-Type:', req.headers['content-type']);
     console.log('📏 Content-Length:', req.headers['content-length']);
+  }
+  
+  // Log dashboard-related requests specifically
+  if (req.path.includes('/dashboard')) {
+    console.log('📊 DASHBOARD REQUEST:', req.method, req.path);
+    console.log('📊 User-Agent:', req.headers['user-agent']);
+    console.log('📊 Accept:', req.headers['accept']);
   }
   
   next();
@@ -194,12 +202,28 @@ app.get('/widget.js', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'widget.js'));
 });
 
-// Serve frontend dashboard
-app.use('/dashboard', express.static(path.join(__dirname, '../frontend/dist')));
+// Serve frontend dashboard - handle both /dashboard and /dashboard/
+// Order matters - specific routes first, then static files
 
-// Catch-all handler for React Router
-app.get('/dashboard/*', (req, res) => {
+// Handle /dashboard specifically without redirect
+app.get('/dashboard', (req, res) => {
+  console.log('📊 Serving dashboard index for /dashboard');
   res.sendFile(path.join(__dirname, '../frontend/dist', 'index.html'));
+});
+
+// Catch-all handler for React Router for nested dashboard routes
+app.get('/dashboard/*', (req, res) => {
+  console.log('📊 Serving dashboard index for /dashboard/*');
+  res.sendFile(path.join(__dirname, '../frontend/dist', 'index.html'));
+});
+
+// Serve static files for dashboard (but not index.html)
+app.use('/dashboard', (req, res, next) => {
+  // Don't serve index.html through static middleware
+  if (req.path === '/' || req.path === '/index.html') {
+    return next();
+  }
+  express.static(path.join(__dirname, '../frontend/dist'))(req, res, next);
 });
 
 // Serve frontend landing page at root

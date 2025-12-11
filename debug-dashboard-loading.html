@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Dashboard Loading Issue</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 1200px; 
+            margin: 0 auto; 
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 10px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .debug-section { 
+            margin: 20px 0; 
+            padding: 15px; 
+            border: 1px solid #ddd; 
+            border-radius: 5px;
+            background-color: #fafafa;
+        }
+        .success { 
+            color: #28a745; 
+            font-weight: bold;
+            background-color: #d4edda;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .error { 
+            color: #dc3545; 
+            font-weight: bold;
+            background-color: #f8d7da;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .info { 
+            color: #17a2b8;
+            background-color: #d1ecf1;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #results {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+        .network-request {
+            margin: 5px 0;
+            padding: 8px;
+            background-color: #e9ecef;
+            border-left: 3px solid #28a745;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+        }
+        .network-error {
+            margin: 5px 0;
+            padding: 8px;
+            background-color: #f8d7da;
+            border-left: 3px solid #dc3545;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+        }
+        .step {
+            margin: 10px 0;
+            padding: 10px;
+            border-left: 3px solid #007bff;
+            background-color: #f8f9fa;
+        }
+        .step.completed {
+            border-left-color: #28a745;
+            background-color: #d4edda;
+        }
+        .step.failed {
+            border-left-color: #dc3545;
+            background-color: #f8d7da;
+        }
+        iframe {
+            width: 100%;
+            height: 600px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Debug Dashboard Loading Issue</h1>
+        <p>This page helps debug why the dashboard keeps loading with the 301 redirect issue.</p>
+        
+        <div class="debug-section">
+            <h3>Step 1: Test Dashboard Routes</h3>
+            <button onclick="testDashboardRoutes()">Test Dashboard Routes</button>
+            <button onclick="testDashboardAPI()">Test Dashboard API</button>
+            <div id="route-test-results"></div>
+        </div>
+        
+        <div class="debug-section">
+            <h3>Step 2: Monitor Network Requests</h3>
+            <button onclick="startNetworkMonitoring()">Start Network Monitor</button>
+            <button onclick="stopNetworkMonitoring()">Stop Network Monitor</button>
+            <button onclick="clearNetworkLog()">Clear Log</button>
+            <div id="network-log" style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; padding: 10px;"></div>
+        </div>
+        
+        <div class="debug-section">
+            <h3>Step 3: Test Actual Dashboard</h3>
+            <button onclick="loadDashboardPage()">Load Real Dashboard</button>
+            <button onclick="testDashboardDirectly()">Test Dashboard Directly</button>
+            <button onclick="testDashboardWithToken()">Test Dashboard With Token</button>
+            <div id="dashboard-test-results"></div>
+            <iframe id="dashboard-frame" style="display: none;"></iframe>
+        </div>
+        
+        <div class="debug-section">
+            <h3>Step 4: Simulate Dashboard Component</h3>
+            <button onclick="simulateDashboardComponent()">Simulate Dashboard Component</button>
+            <button onclick="testDashboardStore()">Test Dashboard Store</button>
+            <div id="component-test-results"></div>
+        </div>
+        
+        <div class="debug-section">
+            <h3>Step 5: Check for Common Issues</h3>
+            <button onclick="checkCommonIssues()">Check Common Issues</button>
+            <button onclick="testBuildStatus()">Test Build Status</button>
+            <div id="issues-test-results"></div>
+        </div>
+        
+        <div id="debug-results"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://talkavax-production.up.railway.app';
+        let networkMonitorActive = false;
+
+        function log(message, type = 'info') {
+            const resultsDiv = document.getElementById('debug-results');
+            const timestamp = new Date().toLocaleTimeString();
+            const color = type === 'error' ? '#dc3545' : type === 'success' ? '#28a745' : '#007bff';
+            
+            resultsDiv.innerHTML += `
+                <div style="margin: 5px 0; padding: 8px; border-left: 3px solid ${color}; background-color: ${type === 'error' ? '#f8d7da' : type === 'success' ? '#d4edda' : '#d1ecf1'};">
+                    [${timestamp}] ${message}
+                </div>
+            `;
+            resultsDiv.scrollTop = resultsDiv.scrollHeight;
+        }
+
+        async function testDashboardRoutes() {
+            const resultsDiv = document.getElementById('route-test-results');
+            resultsDiv.innerHTML = '<div class="info">Testing dashboard routes...</div>';
+            log('Testing dashboard routes...');
+            
+            const routes = [
+                { url: `${API_BASE}/dashboard`, description: 'Dashboard root' },
+                { url: `${API_BASE}/dashboard/`, description: 'Dashboard with slash' },
+                { url: `${API_BASE}/dashboard/index.html`, description: 'Dashboard index.html' },
+                { url: `${API_BASE}/api/dashboard/`, description: 'Dashboard API' }
+            ];
+            
+            for (const route of routes) {
+                try {
+                    log(`Testing ${route.description}: ${route.url}`);
+                    const response = await fetch(route.url, { 
+                        method: 'HEAD',
+                        redirect: 'manual' // Don't follow redirects
+                    });
+                    
+                    log(`${route.url} -> Status: ${response.status} ${response.statusText}`);
+                    
+                    if (response.status >= 300 && response.status < 400) {
+                        const location = response.headers.get('Location');
+                        log(`  Redirect to: ${location}`);
+                    }
+                    
+                    if (response.status === 200) {
+                        resultsDiv.innerHTML += `<div class="success">✅ ${route.description}: ${response.status}</div>`;
+                    } else {
+                        resultsDiv.innerHTML += `<div class="error">❌ ${route.description}: ${response.status}</div>`;
+                    }
+                    
+                } catch (error) {
+                    resultsDiv.innerHTML += `<div class="error">❌ ${route.description}: ${error.message}</div>`;
+                    log(`Error testing ${route.description}: ${error.message}`, 'error');
+                }
+            }
+        }
+
+        async function testDashboardAPI() {
+            const resultsDiv = document.getElementById('route-test-results');
+            resultsDiv.innerHTML += '<div class="info">Testing dashboard API...</div>';
+            log('Testing dashboard API...');
+            
+            try {
+                // First login to get token
+                log('Logging in to get test token...');
+                const loginResponse = await fetch(`${API_BASE}/api/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: 'admin@example.com',
+                        password: 'admin123'
+                    })
+                });
+
+                if (!loginResponse.ok) {
+                    throw new Error('Login failed');
+                }
+
+                const loginData = await loginResponse.json();
+                const token = loginData.data.token;
+                log(`Got token: ${token.substring(0, 30)}...`);
+                
+                // Test dashboard API
+                log('Testing dashboard API with token...');
+                const dashboardResponse = await fetch(`${API_BASE}/api/dashboard/`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const dashboardData = await dashboardResponse.json();
+                
+                if (dashboardResponse.ok && dashboardData.success) {
+                    resultsDiv.innerHTML += `<div class="success">✅ Dashboard API: ${dashboardData.data.sites.length} sites found</div>`;
+                    log(`✅ Dashboard API working - found ${dashboardData.data.sites.length} sites`);
+                } else {
+                    resultsDiv.innerHTML += `<div class="error">❌ Dashboard API: ${dashboardData.message || 'Failed'}</div>`;
+                    log(`❌ Dashboard API failed: ${dashboardData.message || 'Unknown error'}`);
+                }
+                
+            } catch (error) {
+                resultsDiv.innerHTML += `<div class="error">❌ Dashboard API test: ${error.message}</div>`;
+                log(`❌ Dashboard API test error: ${error.message}`, 'error');
+            }
+        }
+
+        function startNetworkMonitoring() {
+            networkMonitorActive = true;
+            log('Network monitoring started', 'success');
+            
+            // Override fetch to monitor requests
+            const originalFetch = window.fetch;
+            window.fetch = async function(...args) {
+                if (!networkMonitorActive) return originalFetch.apply(this, args);
+                
+                const [url, options = {}] = args;
+                const method = options.method || 'GET';
+                
+                log(`🌐 ${method} ${url}`);
+                
+                try {
+                    const response = await originalFetch.apply(this, args);
+                    
+                    // Log the response details
+                    if (url.includes('/dashboard')) {
+                        const logEntry = `
+                            <div class="network-request">
+                                ✅ ${method} ${url} - ${response.status} ${response.statusText}
+                            </div>
+                        `;
+                        document.getElementById('network-log').innerHTML += logEntry;
+                        
+                        if (response.status >= 300 && response.status < 400) {
+                            const location = response.headers.get('Location');
+                            log(`  Redirect to: ${location}`);
+                        }
+                    }
+                    
+                    return response;
+                } catch (error) {
+                    if (url.includes('/dashboard')) {
+                        const errorEntry = `
+                            <div class="network-error">
+                                ❌ ${method} ${url} - Error: ${error.message}
+                            </div>
+                        `;
+                        document.getElementById('network-log').innerHTML += errorEntry;
+                        log(`Dashboard request failed: ${error.message}`, 'error');
+                    }
+                    throw error;
+                }
+            };
+        }
+
+        function stopNetworkMonitoring() {
+            networkMonitorActive = false;
+            log('Network monitoring stopped', 'info');
+        }
+
+        function clearNetworkLog() {
+            document.getElementById('network-log').innerHTML = '';
+            log('Network log cleared');
+        }
+
+        function loadDashboardPage() {
+            const frame = document.getElementById('dashboard-frame');
+            const resultsDiv = document.getElementById('dashboard-test-results');
+            
+            resultsDiv.innerHTML = `
+                <div class="info">
+                    Loading dashboard page in iframe...<br>
+                    <strong>Watch for:</strong>
+                    <ul>
+                        <li>Any redirect messages in network log</li>
+                        <li>What the iframe shows</li>
+                        <li>Any error messages in the iframe</li>
+                    </ul>
+                </div>
+            `;
+            
+            frame.style.display = 'block';
+            frame.src = `${API_BASE}/dashboard`;
+            
+            log('Loaded dashboard page in iframe');
+            
+            // Monitor for load errors
+            frame.onload = () => {
+                log('Dashboard iframe loaded successfully');
+                try {
+                    const iframeUrl = frame.contentWindow.location.href;
+                    log(`Iframe URL: ${iframeUrl}`);
+                } catch (e) {
+                    log('Cannot access iframe URL (cross-origin restriction)');
+                }
+            };
+            
+            frame.onerror = () => {
+                log('Dashboard iframe failed to load', 'error');
+            };
+        }
+
+        async function testDashboardDirectly() {
+            const resultsDiv = document.getElementById('dashboard-test-results');
+            resultsDiv.innerHTML = '<div class="info">Testing dashboard directly with fetch...</div>';
+            log('Testing dashboard directly...');
+            
+            try {
+                // Test dashboard route directly
+                const response = await fetch(`${API_BASE}/dashboard`, {
+                    redirect: 'manual' // Don't follow redirects
+                });
+                
+                log(`Dashboard direct test: ${response.status} ${response.statusText}`);
+                
+                if (response.status === 301 || response.status === 302) {
+                    const location = response.headers.get('Location');
+                    log(`Redirect detected to: ${location}`);
+                    resultsDiv.innerHTML += `<div class="warning">⚠️ Redirect detected to: ${location}</div>`;
+                } else if (response.status === 200) {
+                    const contentType = response.headers.get('Content-Type');
+                    log(`Content-Type: ${contentType}`);
+                    resultsDiv.innerHTML += `<div class="success">✅ Dashboard accessible - Content-Type: ${contentType}</div>`;
+                } else {
+                    resultsDiv.innerHTML += `<div class="error">❌ Dashboard returned: ${response.status}</div>`;
+                }
+                
+            } catch (error) {
+                resultsDiv.innerHTML += `<div class="error">❌ Dashboard test error: ${error.message}</div>`;
+                log(`Dashboard test error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testDashboardWithToken() {
+            const resultsDiv = document.getElementById('dashboard-test-results');
+            resultsDiv.innerHTML += '<div class="info">Testing dashboard with authentication token...</div>';
+            log('Testing dashboard with token...');
+            
+            try {
+                // First login to get token
+                const loginResponse = await fetch(`${API_BASE}/api/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: 'admin@example.com',
+                        password: 'admin123'
+                    })
+                });
+
+                if (!loginResponse.ok) {
+                    throw new Error('Login failed');
+                }
+
+                const loginData = await loginResponse.json();
+                const token = loginData.data.token;
+                
+                // Test dashboard with token
+                const dashboardResponse = await fetch(`${API_BASE}/dashboard`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
+                    redirect: 'manual'
+                });
+
+                log(`Dashboard with token: ${dashboardResponse.status} ${dashboardResponse.statusText}`);
+                
+                if (dashboardResponse.status === 301 || dashboardResponse.status === 302) {
+                    const location = dashboardResponse.headers.get('Location');
+                    log(`Redirect with token: ${location}`);
+                    resultsDiv.innerHTML += `<div class="warning">⚠️ Redirect with token to: ${location}</div>`;
+                } else if (dashboardResponse.status === 200) {
+                    resultsDiv.innerHTML += `<div class="success">✅ Dashboard accessible with token</div>`;
+                } else {
+                    resultsDiv.innerHTML += `<div class="error">❌ Dashboard with token: ${dashboardResponse.status}</div>`;
+                }
+                
+            } catch (error) {
+                resultsDiv.innerHTML += `<div class="error">❌ Dashboard with token test: ${error.message}</div>`;
+                log(`Dashboard with token test error: ${error.message}`, 'error');
+            }
+        }
+
+        async function simulateDashboardComponent() {
+            const resultsDiv = document.getElementById('component-test-results');
+            resultsDiv.innerHTML = '<div class="info">Simulating dashboard component behavior...</div>';
+            log('Simulating dashboard component behavior...');
+            
+            try {
+                // Simulate the dashboard component's useEffect
+                log('Step 1: Simulating useEffect for fetchSites...');
+                
+                // First login to get token
+                const loginResponse = await fetch(`${API_BASE}/api/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: 'admin@example.com',
+                        password: 'admin123'
+                    })
+                });
+
+                if (!loginResponse.ok) {
+                    throw new Error('Login failed');
+                }
+
+                const loginData = await loginResponse.json();
+                const token = loginData.data.token;
+                log(`Got token: ${token.substring(0, 30)}...`);
+                
+                // Simulate fetchSites call
+                log('Step 2: Simulating fetchSites() call...');
+                const dashboardResponse = await fetch(`${API_BASE}/api/dashboard/`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const dashboardData = await dashboardResponse.json();
+                
+                if (dashboardResponse.ok && dashboardData.success) {
+                    log(`✅ fetchSites() successful - found ${dashboardData.data.sites.length} sites`);
+                    
+                    // Simulate the auto-select logic
+                    log('Step 3: Simulating auto-select first site...');
+                    if (dashboardData.data.sites.length > 0) {
+                        const firstSite = dashboardData.data.sites[0];
+                        log(`Auto-selected site: ${firstSite.domain} (${firstSite.status})`);
+                        resultsDiv.innerHTML += `<div class="success">✅ Dashboard component simulation successful!</div>`;
+                    } else {
+                        log('No sites found - would show empty state');
+                        resultsDiv.innerHTML += `<div class="warning">⚠️ No sites found - would show empty state</div>`;
+                    }
+                } else {
+                    log(`❌ fetchSites() failed: ${dashboardData.message}`, 'error');
+                    resultsDiv.innerHTML += `<div class="error">❌ fetchSites() failed: ${dashboardData.message}</div>`;
+                }
+                
+            } catch (error) {
+                resultsDiv.innerHTML += `<div class="error">❌ Component simulation error: ${error.message}</div>`;
+                log(`Component simulation error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testDashboardStore() {
+            const resultsDiv = document.getElementById('component-test-results');
+            resultsDiv.innerHTML += '<div class="info">Testing dashboard store logic...</div>';
+            log('Testing dashboard store logic...');
+            
+            try {
+                // Test the dashboard store's fetchSites method logic
+                log('Testing token retrieval...');
+                
+                // First set a token in localStorage
+                const testToken = 'test-token-' + Date.now();
+                localStorage.setItem('token', testToken);
+                
+                const retrievedToken = localStorage.getItem('token');
+                log(`Token retrieval: ${retrievedToken === testToken ? 'SUCCESS' : 'FAILED'}`);
+                
+                if (retrievedToken === testToken) {
+                    resultsDiv.innerHTML += `<div class="success">✅ localStorage token retrieval working</div>`;
+                } else {
+                    resultsDiv.innerHTML += `<div class="error">❌ localStorage token retrieval failed</div>`;
+                }
+                
+                // Clean up
+                localStorage.removeItem('token');
+                
+            } catch (error) {
+                resultsDiv.innerHTML += `<div class="error">❌ Dashboard store test error: ${error.message}</div>`;
+                log(`Dashboard store test error: ${error.message}`, 'error');
+            }
+        }
+
+        async function checkCommonIssues() {
+            const resultsDiv = document.getElementById('issues-test-results');
+            resultsDiv.innerHTML = '<div class="info">Checking for common dashboard loading issues...</div>';
+            log('Checking for common issues...');
+            
+            const issues = [
+                {
+                    name: 'CORS Issues',
+                    test: async () => {
+                        try {
+                            const response = await fetch(`${API_BASE}/api/dashboard/`);
+                            const corsHeaders = {
+                                'Access-Control-Allow-Origin': response.headers.get('Access-Control-Allow-Origin'),
+                                'Access-Control-Allow-Credentials': response.headers.get('Access-Control-Allow-Credentials')
+                            };
+                            log(`CORS headers: ${JSON.stringify(corsHeaders)}`);
+                            return { status: 'info', message: 'CORS headers present' };
+                        } catch (error) {
+                            return { status: 'error', message: `CORS error: ${error.message}` };
+                        }
+                    }
+                },
+                {
+                    name: 'Token Validation',
+                    test: async () => {
+                        try {
+                            const loginResponse = await fetch(`${API_BASE}/api/auth/login`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    email: 'admin@example.com',
+                                    password: 'admin123'
+                                })
+                            });
+                            
+                            if (loginResponse.ok) {
+                                const loginData = await loginResponse.json();
+                                const token = loginData.data.token;
+                                
+                                const profileResponse = await fetch(`${API_BASE}/api/auth/profile`, {
+                                    headers: { 'Authorization': `Bearer ${token}` }
+                                });
+                                
+                                return { status: profileResponse.ok ? 'success' : 'error', message: `Token validation: ${profileResponse.status}` };
+                            } else {
+                                return { status: 'error', message: 'Cannot test token - login failed' };
+                            }
+                        } catch (error) {
+                            return { status: 'error', message: `Token test error: ${error.message}` };
+                        }
+                    }
+                },
+                {
+                    name: 'Dashboard API Response',
+                    test: async () => {
+                        try {
+                            const loginResponse = await fetch(`${API_BASE}/api/auth/login`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    email: 'admin@example.com',
+                                    password: 'admin123'
+                                })
+                            });
+                            
+                            if (loginResponse.ok) {
+                                const loginData = await loginResponse.json();
+                                const token = loginData.data.token;
+                                
+                                const dashboardResponse = await fetch(`${API_BASE}/api/dashboard/`, {
+                                    headers: { 'Authorization': `Bearer ${token}` }
+                                });
+                                
+                                const dashboardData = await dashboardResponse.json();
+                                
+                                if (dashboardResponse.ok && dashboardData.success) {
+                                    return { status: 'success', message: `Found ${dashboardData.data.sites.length} sites` };
+                                } else {
+                                    return { status: 'error', message: `Dashboard API: ${dashboardData.message || 'Failed'}` };
+                                }
+                            } else {
+                                return { status: 'error', message: 'Cannot test dashboard - login failed' };
+                            }
+                        } catch (error) {
+                            return { status: 'error', message: `Dashboard test error: ${error.message}` };
+                        }
+                    }
+                }
+            ];
+            
+            for (const issue of issues) {
+                try {
+                    const result = await issue.test();
+                    resultsDiv.innerHTML += `
+                        <div class="test-result ${result.status}">
+                            <strong>${issue.name}:</strong> ${result.message}
+                        </div>
+                    `;
+                } catch (error) {
+                    resultsDiv.innerHTML += `
+                        <div class="test-result error">
+                            <strong>${issue.name}:</strong> Error: ${error.message}
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        async function testBuildStatus() {
+            const resultsDiv = document.getElementById('issues-test-results');
+            resultsDiv.innerHTML += '<div class="info">Testing build/deployment status...</div>';
+            log('Testing build status...');
+            
+            try {
+                // Test if the frontend files are accessible
+                const tests = [
+                    { url: `${API_BASE}/`, description: 'Root path' },
+                    { url: `${API_BASE}/index.html`, description: 'Index HTML' },
+                    { url: `${API_BASE}/assets/`, description: 'Assets directory' }
+                ];
+                
+                for (const test of tests) {
+                    try {
+                        const response = await fetch(test.url);
+                        const result = response.ok ? 'success' : 'error';
+                        const message = response.ok ? `${response.status} OK` : `${response.status} ${response.statusText}`;
+                        
+                        resultsDiv.innerHTML += `
+                            <div class="test-result ${result}">
+                                <strong>${test.description}:</strong> ${message}
+                            </div>
+                        `;
+                        
+                        log(`${test.description}: ${message}`, result);
+                    } catch (error) {
+                        resultsDiv.innerHTML += `
+                            <div class="test-result error">
+                                <strong>${test.description}:</strong> Error: ${error.message}
+                            </div>
+                        `;
+                        log(`${test.description} error: ${error.message}`, 'error');
+                    }
+                }
+                
+            } catch (error) {
+                resultsDiv.innerHTML += `<div class="test-result error">Build status test error: ${error.message}</div>`;
+                log(`Build status test error: ${error.message}`, 'error');
+            }
+        }
+
+        // Auto-run basic tests on page load
+        window.addEventListener('load', () => {
+            log('🧪 Dashboard debugging page loaded and ready', 'info');
+            log('Click the buttons above to debug the dashboard loading issue', 'info');
+        });
+    </script>
+</body>
+</html>
