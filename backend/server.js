@@ -202,12 +202,19 @@ app.get('/widget.js', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'widget.js'));
 });
 
-// Dashboard routes - serve React app for all dashboard paths
-// IMPORTANT: These must come BEFORE static file serving to avoid conflicts
+// Dashboard routes - handle both /dashboard and /dashboard/
+// Strategy: redirect /dashboard to /dashboard/ and serve from there
 
-// Handle dashboard root - explicit route to avoid redirect issues
+// Handle /dashboard root - redirect to /dashboard/ to avoid Express auto-redirect issues
 app.get('/dashboard', (req, res) => {
-  console.log('📊 Serving dashboard index for /dashboard');
+  console.log('📊 Redirecting /dashboard to /dashboard/');
+  // Use 307 temporary redirect to preserve the original request method
+  res.redirect(307, '/dashboard/');
+});
+
+// Handle dashboard with trailing slash - serve the React app
+app.get('/dashboard/', (req, res) => {
+  console.log('📊 Serving dashboard index for /dashboard/');
   const indexPath = path.join(__dirname, '../frontend/dist', 'index.html');
   console.log('📊 Sending file:', indexPath);
   res.sendFile(indexPath, (err) => {
@@ -235,7 +242,7 @@ app.get('/dashboard/*', (req, res) => {
   });
 });
 
-// Serve static files for dashboard assets (JS, CSS, etc.) but NOT index.html
+// Serve static files for dashboard assets (JS, CSS, etc.)
 app.use('/dashboard', express.static(path.join(__dirname, '../frontend/dist'), {
   index: false // Don't serve index.html automatically
 }));
