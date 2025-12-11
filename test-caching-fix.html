@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Caching Fix - Dashboard 304 Issue</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 1000px; 
+            margin: 0 auto; 
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 10px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .debug-section { 
+            margin: 20px 0; 
+            padding: 15px; 
+            border: 1px solid #ddd; 
+            border-radius: 5px;
+            background-color: #fafafa;
+        }
+        .success { 
+            color: #28a745; 
+            font-weight: bold;
+            background-color: #d4edda;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .error { 
+            color: #dc3545; 
+            font-weight: bold;
+            background-color: #f8d7da;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .info { 
+            color: #17a2b8;
+            background-color: #d1ecf1;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #results {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+        .network-request {
+            margin: 5px 0;
+            padding: 8px;
+            background-color: #e9ecef;
+            border-left: 3px solid #28a745;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+        }
+        .network-error {
+            margin: 5px 0;
+            padding: 8px;
+            background-color: #f8d7da;
+            border-left: 3px solid #dc3545;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+        }
+        .response-data {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        iframe {
+            width: 100%;
+            height: 600px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Test Caching Fix - Dashboard 304 Issue</h1>
+        <p>This page helps test and debug the 304 Not Modified caching issue with the dashboard API.</p>
+        
+        <div class="debug-section">
+            <h3>Step 1: Test Dashboard API Caching</h3>
+            <button onclick="testDashboardAPICaching()">Test Dashboard API Caching</button>
+            <button onclick="testDashboardAPIWithCacheHeaders()">Test with Cache Headers</button>
+            <div id="api-test-results"></div>
+        </div>
+        
+        <div class="debug-section">
+            <h3>Step 2: Monitor Network Requests</h3>
+            <button onclick="startNetworkMonitoring()">Start Network Monitor</button>
+            <button onclick="stopNetworkMonitoring()">Stop Network Monitor</button>
+            <button onclick="clearNetworkLog()">Clear Log</button>
+            <div id="network-log" style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; padding: 10px;"></div>
+        </div>
+        
+        <div class="debug-section">
+            <h3>Step 3: Test Dashboard Component Behavior</h3>
+            <button onclick="simulateDashboardComponent()">Simulate Dashboard Component</button>
+            <button onclick="testDashboardStoreBehavior()">Test Dashboard Store Behavior</button>
+            <div id="component-test-results"></div>
+        </div>
+        
+        <div class="debug-section">
+            <h3>Step 4: Force Fresh Data Request</h3>
+            <button onclick="forceFreshDataRequest()">Force Fresh Data Request</button>
+            <button onclick="testWithTimestamp()">Test with Timestamp</button>
+            <div id="fresh-data-results"></div>
+        </div>
+        
+        <div class="debug-section">
+            <h3>Step 5: Test Real Dashboard</h3>
+            <button onclick="testRealDashboard()">Test Real Dashboard Loading</button>
+            <button onclick="openDashboardWithDevTools()">Open with DevTools</button>
+            <div id="real-test-results"></div>
+            <iframe id="dashboard-frame" style="display: none;"></iframe>
+        </div>
+        
+        <div id="debug-results"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://talkavax-production.up.railway.app';
+        let networkMonitorActive = false;
+        let testToken = null;
+
+        function log(message, type = 'info') {
+            const resultsDiv = document.getElementById('debug-results');
+            const timestamp = new Date().toLocaleTimeString();
+            const color = type === 'error' ? '#dc3545' : type === 'success' ? '#28a745' : '#007bff';
+            
+            resultsDiv.innerHTML += `
+                <div style="margin: 5px 0; padding: 8px; border-left: 3px solid ${color}; background-color: ${type === 'error' ? '#f8d7da' : type === 'success' ? '#d4edda' : '#d1ecf1'};">
+                    [${timestamp}] ${message}
+                </div>
+            `;
+            resultsDiv.scrollTop = resultsDiv.scrollHeight;
+        }
+
+        async function testDashboardAPICaching() {
+            const resultsDiv = document.getElementById('api-test-results');
+            resultsDiv.innerHTML = '<div class="info">Testing dashboard API caching behavior...</div>';
+            log('Testing dashboard API caching behavior...');
+            
+            try {
+                // Login first
+                log('Step 1: Logging in to get token...');
+                const loginResponse = await fetch(`${API_BASE}/api/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: 'admin@example.com',
+                        password: 'admin123'
+                    })
+                });
+
+                if (!loginResponse.ok) {
+                    throw new Error('Login failed');
+                }
+
+                const loginData = await loginResponse.json();
+                testToken = loginData.data.token;
+                
+                log(`✅ Login successful - Token: ${testToken.substring(0, 30)}...`);
+                
+                // Step 2: Test dashboard API
+                log('Step 2: Testing dashboard API...');
+                
+                // First request
+                const response1 = await fetch(`${API_BASE}/api/dashboard/`, {
+                    headers: {
+                        'Authorization': `Bearer ${testToken}`
+                    }
+                });
+
+                const data1 = await response1.json();
+                log(`First request: ${response1.status} ${response1.statusText}`);
+                log(`First request headers: ${JSON.stringify(Object.fromEntries(response1.headers.entries()), null, 2)}`);
+                log(`First request data: ${data1.data.sites.length} sites found`);
+                
+                // Wait a moment
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // Second request (this might get 304 if caching is still active)
+                const response2 = await fetch(`${API_BASE}/api/dashboard/`, {
+                    headers: {
+                        'Authorization': `Bearer ${testToken}`
+                    }
+                });
+
+                const data2 = await response2.json();
+                log(`Second request: ${response2.status} ${response2.statusText}`);
+                log(`Second request headers: ${JSON.stringify(Object.fromEntries(response2.headers.entries()), null, 2)}`);
+                
+                if (response2.status === 304) {
+                    log('❌ Got 304 Not Modified - caching issue detected!', 'error');
+                    resultsDiv.innerHTML += `
+                        <div class="error">
+                            ❌ Caching issue detected!
+                            <br>Second request returned 304 Not Modified
+                            <br>This means the browser is using cached data
+                        </div>
+                    `;
+                } else if (response2.status === 200) {
+                    log('✅ Got 200 OK - fresh data received!', 'success');
+                    resultsDiv.innerHTML += `
+                        <div class="success">
+                            ✅ Fresh data received!
+                            <br>Second request returned 200 OK
+                            <br>Data: ${data2.data.sites.length} sites
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                resultsDiv.innerHTML += `<div class="error">❌ API test error: ${error.message}</div>`;
+                log(`❌ API test error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testDashboardAPIWithCacheHeaders() {
+            const resultsDiv = document.getElementById('api-test-results');
+            resultsDiv.innerHTML += '<div class="info">Testing dashboard API with cache control headers...</div>';
+            log('Testing dashboard API with cache control headers...');
+            
+            if (!testToken) {
+                resultsDiv.innerHTML += '<div class="error">❌ No token available - please run login test first</div>';
+                return;
+            }
+            
+            try {
+                log('Testing with cache control headers...');
+                
+                const response = await fetch(`${API_BASE}/api/dashboard/`, {
+                    headers: {
+                        'Authorization': `Bearer ${testToken}`,
+                        'Cache-Control': 'no-cache, no-store, must-revalidate',
+                        'Pragma': 'no-cache',
+                        'If-Modified-Since': '0'
+                    }
+                });
+
+                const data = await response.json();
+                
+                log(`Request with cache headers: ${response.status} ${response.statusText}`);
+                log(`Request headers sent: Cache-Control, Pragma, If-Modified-Since`);
+                log(`Response headers: ${JSON.stringify(Object.fromEntries(response.headers.entries()), null, 2)}`);
+                
+                if (response.status === 200) {
+                    resultsDiv.innerHTML += `
+                        <div class="success">
+                            ✅ Request with cache headers successful!
+                            <br>Status: ${response.status}
+                            <br>Data: ${data.data.sites.length} sites
+                        </div>
+                    `;
+                } else {
+                    resultsDiv.innerHTML += `
+                        <div class="error">
+                            ❌ Request with cache headers failed
+                            <br>Status: ${response.status}
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                resultsDiv.innerHTML += `<div class="error">❌ Cache headers test error: ${error.message}</div>`;
+                log(`❌ Cache headers test error: ${error.message}`, 'error');
+            }
+        }
+
+        function startNetworkMonitoring() {
+            networkMonitorActive = true;
+            log('Network monitoring started', 'success');
+            
+            // Override fetch to monitor requests
+            const originalFetch = window.fetch;
+            window.fetch = async function(...args) {
+                if (!networkMonitorActive) return originalFetch.apply(this, args);
+                
+                const [url, options = {}] = args;
+                const method = options.method || 'GET';
+                const headers = options.headers || {};
+                
+                log(`🌐 ${method} ${url}`);
+                log(`  Headers: ${JSON.stringify(headers, null, 2).substring(0, 200)}`);
+                
+                try {
+                    const response = await originalFetch.apply(this, args);
+                    
+                    // Log the response details
+                    if (url.includes('/dashboard')) {
+                        const logEntry = `
+                            <div class="network-request">
+                                ✅ ${method} ${url} - ${response.status} ${response.statusText}
+                            </div>
+                        `;
+                        document.getElementById('network-log').innerHTML += logEntry;
+                        
+                        // Log cache-related headers
+                        const cacheHeaders = {
+                            'ETag': response.headers.get('ETag'),
+                            'Cache-Control': response.headers.get('Cache-Control'),
+                            'Last-Modified': response.headers.get('Last-Modified'),
+                            'Expires': response.headers.get('Expires')
+                        };
+                        
+                        if (Object.values(cacheHeaders).some(h => h)) {
+                            log(`  Cache headers: ${JSON.stringify(cacheHeaders, null, 2)}`);
+                        }
+                        
+                        if (response.status === 304) {
+                            log('  ⚠️ 304 Not Modified detected!', 'warning');
+                        }
+                    }
+                    
+                    return response;
+                } catch (error) {
+                    if (url.includes('/dashboard')) {
+                        const errorEntry = `
+                            <div class="network-error">
+                                ❌ ${method} ${url} - Error: ${error.message}
+                            </div>
+                        `;
+                        document.getElementById('network-log').innerHTML += errorEntry;
+                        log(`Dashboard request failed: ${error.message}`, 'error');
+                    }
+                    throw error;
+                }
+            };
+        }
+
+        function stopNetworkMonitoring() {
+            networkMonitorActive = false;
+            log('Network monitoring stopped', 'info');
+        }
+
+        function clearNetworkLog() {
+            document.getElementById('network-log').innerHTML = '';
+            log('Network log cleared');
+        }
+
+        async function simulateDashboardComponent() {
+            const resultsDiv = document.getElementById('component-test-results');
+            resultsDiv.innerHTML = '<div class="info">Simulating dashboard component behavior...</div>';
+            log('Simulating dashboard component behavior...');
+            
+            try {
+                // Simulate the dashboard component's useEffect
+                log('Step 1: Simulating component mount...');
+                
+                // First login to get token
+                const loginResponse = await fetch(`${API_BASE}/api/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: 'admin@example.com',
+                        password: 'admin123'
+                    })
+                });
+
+                if (!loginResponse.ok) {
+                    throw new Error('Login failed');
+                }
+
+                const loginData = await loginResponse.json();
+                const token = loginData.data.token;
+                
+                log(`✅ Login successful - Token: ${token.substring(0, 30)}...`);
+                
+                // Store token like the frontend would
+                localStorage.setItem('token', token);
+                localStorage.setItem('user', JSON.stringify(loginData.data.user));
+                
+                // Simulate fetchSites call
+                log('Step 2: Simulating fetchSites() call...');
+                const dashboardResponse = await fetch(`${API_BASE}/api/dashboard/`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const dashboardData = await dashboardResponse.json();
+                
+                log(`Dashboard API response: ${dashboardResponse.status} ${dashboardResponse.statusText}`);
+                
+                if (dashboardResponse.ok && dashboardData.success) {
+                    log(`✅ fetchSites() successful - found ${dashboardData.data.sites.length} sites`);
+                    
+                    // Simulate the auto-select logic
+                    log('Step 3: Simulating auto-select first site...');
+                    if (dashboardData.data.sites.length > 0) {
+                        const firstSite = dashboardData.data.sites[0];
+                        log(`Auto-selected site: ${firstSite.domain} (${firstSite.status})`);
+                        resultsDiv.innerHTML += `
+                            <div class="success">
+                                ✅ Dashboard component simulation successful!
+                                <br>Found ${dashboardData.data.sites.length} sites
+                                <br>Auto-selected: ${firstSite.domain}
+                            </div>
+                        `;
+                    } else {
+                        log('No sites found - would show empty state');
+                        resultsDiv.innerHTML += `
+                            <div class="warning">
+                                ⚠️ No sites found - would show empty state
+                            </div>
+                        `;
+                    }
+                } else {
+                    log(`❌ fetchSites() failed: ${dashboardData.message}`, 'error');
+                    resultsDiv.innerHTML += `
+                        <div class="error">
+                            ❌ fetchSites() failed: ${dashboardData.message}
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                resultsDiv.innerHTML += `<div class="error">❌ Component simulation error: ${error.message}</div>`;
+                log(`❌ Component simulation error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testDashboardStoreBehavior() {
+            const resultsDiv = document.getElementById('component-test-results');
+            resultsDiv.innerHTML += '<div class="info">Testing dashboard store behavior...</div>';
+            log('Testing dashboard store behavior...');
+            
+            try {
+                // Test the dashboard store's loading behavior
+                log('Testing loading state management...');
+                
+                // Simulate multiple rapid requests (like what might happen in React)
+                const token = localStorage.getItem('token') || 'test-token';
+                
+                log('Making rapid sequential requests...');
+                const promises = [];
+                
+                for (let i = 0; i < 3; i++) {
+                    promises.push(
+                        fetch(`${API_BASE}/api/dashboard/`, {
+                            headers: {
+                                'Authorization': `Bearer ${token}`
+                            }
+                        }).then(response => ({
+                            request: i + 1,
+                            status: response.status,
+                            statusText: response.statusText
+                        }))
+                    );
+                }
+                
+                const results = await Promise.all(promises);
+                
+                results.forEach((result, index) => {
+                    log(`Request ${index + 1}: ${result.status} ${result.statusText}`);
+                });
+                
+                const allSuccess = results.every(r => r.status === 200);
+                const any304 = results.some(r => r.status === 304);
+                
+                if (allSuccess && !any304) {
+                    resultsDiv.innerHTML += `
+                        <div class="success">
+                            ✅ All requests successful - no caching issues detected
+                        </div>
+                    `;
+                } else if (any304) {
+                    resultsDiv.innerHTML += `
+                        <div class="warning">
+                            ⚠️ Some requests returned 304 - caching issue detected
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                resultsDiv.innerHTML += `<div class="error">❌ Store behavior test error: ${error.message}</div>`;
+                log(`❌ Store behavior test error: ${error.message}`, 'error');
+            }
+        }
+
+        async function forceFreshDataRequest() {
+            const resultsDiv = document.getElementById('fresh-data-results');
+            resultsDiv.innerHTML = '<div class="info">Forcing fresh data request...</div>';
+            log('Forcing fresh data request...');
+            
+            if (!testToken) {
+                resultsDiv.innerHTML += '<div class="error">❌ No token available</div>';
+                return;
+            }
+            
+            try {
+                log('Adding timestamp to force fresh data...');
+                
+                const timestamp = Date.now();
+                const response = await fetch(`${API_BASE}/api/dashboard/?t=${timestamp}`, {
+                    headers: {
+                        'Authorization': `Bearer ${testToken}`,
+                        'Cache-Control': 'no-cache, no-store, must-revalidate',
+                        'Pragma': 'no-cache',
+                        'Expires': '0'
+                    }
+                });
+
+                const data = await response.json();
+                
+                log(`Fresh data request: ${response.status} ${response.statusText}`);
+                log(`Request URL: ${API_BASE}/api/dashboard/?t=${timestamp}`);
+                log(`Response data: ${data.data.sites.length} sites`);
+                
+                if (response.status === 200) {
+                    resultsDiv.innerHTML += `
+                        <div class="success">
+                            ✅ Fresh data request successful!
+                            <br>Status: ${response.status}
+                            <br>Timestamp: ${timestamp}
+                            <br>Data: ${data.data.sites.length} sites
+                        </div>
+                    `;
+                } else {
+                    resultsDiv.innerHTML += `
+                        <div class="error">
+                            ❌ Fresh data request failed
+                            <br>Status: ${response.status}
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                resultsDiv.innerHTML += `<div class="error">❌ Fresh data request error: ${error.message}</div>`;
+                log(`❌ Fresh data request error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testWithTimestamp() {
+            const resultsDiv = document.getElementById('fresh-data-results');
+            resultsDiv.innerHTML += '<div class="info">Testing with timestamp parameter...</div>';
+            log('Testing with timestamp parameter...');
+            
+            if (!testToken) {
+                resultsDiv.innerHTML += '<div class="error">❌ No token available</div>';
+                return;
+            }
+            
+            try {
+                // Test multiple requests with different timestamps
+                const timestamps = [Date.now(), Date.now() + 1, Date.now() + 2];
+                
+                log('Testing multiple requests with different timestamps...');
+                
+                const results = await Promise.all(
+                    timestamps.map(async (timestamp, index) => {
+                        const response = await fetch(`${API_BASE}/api/dashboard/?t=${timestamp}`, {
+                            headers: {
+                                'Authorization': `Bearer ${testToken}`
+                            }
+                        });
+                        
+                        return {
+                            timestamp,
+                            status: response.status,
+                            statusText: response.statusText
+                        };
+                    })
+                );
+                
+                results.forEach((result, index) => {
+                    log(`Request ${index + 1} (t=${result.timestamp}): ${result.status} ${result.statusText}`);
+                });
+                
+                const all200 = results.every(r => r.status === 200);
+                const any304 = results.some(r => r.status === 304);
+                
+                if (all200 && !any304) {
+                    resultsDiv.innerHTML += `
+                        <div class="success">
+                            ✅ All timestamp requests successful!
+                            <br>No 304 responses detected
+                        </div>
+                    `;
+                } else if (any304) {
+                    resultsDiv.innerHTML += `
+                        <div class="warning">
+                            ⚠️ Some timestamp requests returned 304
+                            <br>Caching issue still present
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                resultsDiv.innerHTML += `<div class="error">❌ Timestamp test error: ${error.message}</div>`;
+                log(`❌ Timestamp test error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testRealDashboard() {
+            const resultsDiv = document.getElementById('real-test-results');
+            resultsDiv.innerHTML = `
+                <div class="info">
+                    <strong>🌐 Testing real dashboard loading...</strong>
+                    <ol>
+                        <li>Login with: admin@example.com / admin123</li>
+                        <li>Watch the Network tab in DevTools</li>
+                        <li>Look for 304 responses in dashboard API calls</li>
+                        <li>Report what you observe</li>
+                    </ol>
+                </div>
+                <button onclick="reportDashboardWorking()" style="background-color: #28a745; margin: 5px;">✅ Dashboard Works - No 304 Issues!</button>
+                <button onclick="reportDashboardStillCached()" style="background-color: #dc3545; margin: 5px;">❌ Still Getting 304 Responses</button>
+            `;
+            
+            window.open(`${API_BASE}/login`, '_blank');
+            log('Opened real dashboard for manual testing - check Network tab for 304 responses');
+        }
+
+        function openDashboardWithDevTools() {
+            const resultsDiv = document.getElementById('real-test-results');
+            resultsDiv.innerHTML = `
+                <div class="info">
+                    <strong>🔧 Opening dashboard with DevTools instructions...</strong>
+                    <ol>
+                        <li>Open DevTools (F12) before clicking the button</li>
+                        <li>Go to Network tab</li>
+                        <li>Look for dashboard API requests</li>
+                        <li>Check if any show 304 status</li>
+                    </ol>
+                </div>
+            `;
+            
+            // Open dashboard directly
+            window.open(`${API_BASE}/dashboard`, '_blank');
+            log('Opened dashboard directly - check Network tab for 304 responses in API calls');
+        }
+
+        function reportDashboardWorking() {
+            document.getElementById('real-test-results').innerHTML = `
+                <div class="success">
+                    <h3>🎉 DASHBOARD LOADING FIXED!</h3>
+                    <p>The dashboard is working correctly!</p>
+                    <p>No 304 responses detected in the Network tab.</p>
+                    <p><strong>The caching issue has been resolved!</strong></p>
+                </div>
+            `;
+            log('Manual test reported: SUCCESS - No 304 caching issues detected!', 'success');
+        }
+
+        function reportDashboardStillCached() {
+            document.getElementById('real-test-results').innerHTML = `
+                <div class="error">
+                    <h3>❌ Caching Issue Still Present</h3>
+                    <p>You're still seeing 304 responses in the Network tab.</p>
+                    <p>The dashboard API calls are still being cached.</p>
+                    <p>Please note which API calls show 304 status.</p>
+                </div>
+            `;
+            log('Manual test reported: FAILURE - Still seeing 304 caching responses', 'error');
+        }
+
+        // Auto-run basic test on page load
+        window.addEventListener('load', () => {
+            log('🧪 Caching test page loaded and ready', 'info');
+            log('Click the buttons above to test the caching fix', 'info');
+        });
+    </script>
+</body>
+</html>

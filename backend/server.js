@@ -202,14 +202,39 @@ app.get('/widget.js', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'widget.js'));
 });
 
-// Dashboard routes - handle both /dashboard and /dashboard/
-// Strategy: redirect /dashboard to /dashboard/ and serve from there
+// Test route to verify file serving works
+app.get('/test-file', (req, res) => {
+  console.log('🧪 Testing file serving');
+  const testPath = path.join(__dirname, '../frontend/dist', 'index.html');
+  console.log('🧪 Test file path:', testPath);
+  
+  // Check if file exists
+  const fs = require('fs');
+  if (fs.existsSync(testPath)) {
+    console.log('✅ File exists, sending it');
+    res.sendFile(testPath);
+  } else {
+    console.log('❌ File does not exist:', testPath);
+    res.status(404).send('File not found: ' + testPath);
+  }
+});
 
-// Handle /dashboard root - redirect to /dashboard/ to avoid Express auto-redirect issues
+// Dashboard routes - serve React app for all dashboard paths
+// Fixed: remove redirect to prevent infinite loop
+
+// Handle dashboard root - serve React app directly (NO REDIRECT)
 app.get('/dashboard', (req, res) => {
-  console.log('📊 Redirecting /dashboard to /dashboard/');
-  // Use 307 temporary redirect to preserve the original request method
-  res.redirect(307, '/dashboard/');
+  console.log('📊 Serving dashboard index for /dashboard');
+  const indexPath = path.join(__dirname, '../frontend/dist', 'index.html');
+  console.log('📊 Sending file:', indexPath);
+  res.sendFile(indexPath, (err) => {
+    if (err) {
+      console.error('❌ Error sending dashboard index:', err);
+      res.status(500).send('Dashboard not available');
+    } else {
+      console.log('✅ Dashboard index sent successfully');
+    }
+  });
 });
 
 // Handle dashboard with trailing slash - serve the React app
