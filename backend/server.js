@@ -202,29 +202,43 @@ app.get('/widget.js', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'widget.js'));
 });
 
-// Serve frontend dashboard - handle both /dashboard and /dashboard/
-// Order matters - specific routes first, then static files
+// Dashboard routes - serve React app for all dashboard paths
+// IMPORTANT: These must come BEFORE static file serving to avoid conflicts
 
-// Handle /dashboard specifically without redirect
+// Handle dashboard root - explicit route to avoid redirect issues
 app.get('/dashboard', (req, res) => {
   console.log('📊 Serving dashboard index for /dashboard');
-  res.sendFile(path.join(__dirname, '../frontend/dist', 'index.html'));
+  const indexPath = path.join(__dirname, '../frontend/dist', 'index.html');
+  console.log('📊 Sending file:', indexPath);
+  res.sendFile(indexPath, (err) => {
+    if (err) {
+      console.error('❌ Error sending dashboard index:', err);
+      res.status(500).send('Dashboard not available');
+    } else {
+      console.log('✅ Dashboard index sent successfully');
+    }
+  });
 });
 
-// Catch-all handler for React Router for nested dashboard routes
+// Handle all nested dashboard routes
 app.get('/dashboard/*', (req, res) => {
-  console.log('📊 Serving dashboard index for /dashboard/*');
-  res.sendFile(path.join(__dirname, '../frontend/dist', 'index.html'));
+  console.log('📊 Serving dashboard index for /dashboard/* - Path:', req.path);
+  const indexPath = path.join(__dirname, '../frontend/dist', 'index.html');
+  console.log('📊 Sending file:', indexPath);
+  res.sendFile(indexPath, (err) => {
+    if (err) {
+      console.error('❌ Error sending dashboard index for nested route:', err);
+      res.status(500).send('Dashboard not available');
+    } else {
+      console.log('✅ Dashboard index sent successfully for nested route');
+    }
+  });
 });
 
-// Serve static files for dashboard (but not index.html)
-app.use('/dashboard', (req, res, next) => {
-  // Don't serve index.html through static middleware
-  if (req.path === '/' || req.path === '/index.html') {
-    return next();
-  }
-  express.static(path.join(__dirname, '../frontend/dist'))(req, res, next);
-});
+// Serve static files for dashboard assets (JS, CSS, etc.) but NOT index.html
+app.use('/dashboard', express.static(path.join(__dirname, '../frontend/dist'), {
+  index: false // Don't serve index.html automatically
+}));
 
 // Serve frontend landing page at root
 app.use('/', express.static(path.join(__dirname, '../frontend/dist')));
