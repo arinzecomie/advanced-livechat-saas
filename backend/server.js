@@ -268,9 +268,8 @@ app.get('/dashboard/*', (req, res) => {
 });
 
 // Serve static files for dashboard assets (JS, CSS, etc.)
-app.use('/dashboard', express.static(path.join(__dirname, '../frontend/dist'), {
-  index: false // Don't serve index.html automatically
-}));
+// Fixed: remove index: false to prevent Express auto-redirects
+app.use('/dashboard', express.static(path.join(__dirname, '../frontend/dist')));
 
 // Serve frontend landing page at root
 app.use('/', express.static(path.join(__dirname, '../frontend/dist')));
