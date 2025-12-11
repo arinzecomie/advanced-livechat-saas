@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Login Error</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 1000px; 
+            margin: 0 auto; 
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 10px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .debug-section { 
+            margin: 20px 0; 
+            padding: 15px; 
+            border: 1px solid #ddd; 
+            border-radius: 5px;
+            background-color: #fafafa;
+        }
+        .success { 
+            color: #28a745; 
+            font-weight: bold;
+            background-color: #d4edda;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .error { 
+            color: #dc3545; 
+            font-weight: bold;
+            background-color: #f8d7da;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .info { 
+            color: #17a2b8;
+            background-color: #d1ecf1;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #results {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+        .network-request {
+            margin: 5px 0;
+            padding: 8px;
+            background-color: #e9ecef;
+            border-left: 3px solid #28a745;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+        }
+        .network-error {
+            margin: 5px 0;
+            padding: 8px;
+            background-color: #f8d7da;
+            border-left: 3px solid #dc3545;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+        }
+        .response-data {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        iframe {
+            width: 100%;
+            height: 600px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Debug Login Error - "Invalid response from server"</h1>
+        <p>This page helps debug the "Invalid response from server" error when submitting the login form.</p>
+        
+        <div class="debug-section">
+            <h3>Step 1: Test Login API Directly</h3>
+            <button onclick="testLoginAPI()">Test Login API</button>
+            <button onclick="testLoginAPIRaw()">Test Login API (Raw Response)</button>
+            <div id="api-test-results"></div>
+        </div>
+        
+        <div class="debug-section">
+            <h3>Step 2: Monitor Network Requests</h3>
+            <button onclick="startNetworkMonitoring()">Start Network Monitor</button>
+            <button onclick="stopNetworkMonitoring()">Stop Network Monitor</button>
+            <button onclick="clearNetworkLog()">Clear Log</button>
+            <div id="network-log" style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; padding: 10px;"></div>
+        </div>
+        
+        <div class="debug-section">
+            <h3>Step 3: Test Actual Login Form</h3>
+            <button onclick="loadLoginPage()">Load Real Login Page</button>
+            <button onclick="testLocalStorage()">Test LocalStorage</button>
+            <button onclick="simulateFrontendLogin()">Simulate Frontend Login</button>
+            <div id="frontend-test-results"></div>
+            <iframe id="login-frame" style="display: none;"></iframe>
+        </div>
+        
+        <div class="debug-section">
+            <h3>Step 4: Response Structure Analysis</h3>
+            <button onclick="analyzeResponseStructure()">Analyze Response Structure</button>
+            <button onclick="testResponseParsing()">Test Response Parsing</button>
+            <div id="analysis-results"></div>
+        </div>
+        
+        <div id="debug-results"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://talkavax-production.up.railway.app';
+        let networkMonitorActive = false;
+
+        function log(message, type = 'info') {
+            const resultsDiv = document.getElementById('debug-results');
+            const timestamp = new Date().toLocaleTimeString();
+            const color = type === 'error' ? '#dc3545' : type === 'success' ? '#28a745' : '#007bff';
+            
+            resultsDiv.innerHTML += `
+                <div style="margin: 5px 0; padding: 8px; border-left: 3px solid ${color}; background-color: ${type === 'error' ? '#f8d7da' : type === 'success' ? '#d4edda' : '#d1ecf1'};">
+                    [${timestamp}] ${message}
+                </div>
+            `;
+        }
+
+        async function testLoginAPI() {
+            const resultsDiv = document.getElementById('api-test-results');
+            resultsDiv.innerHTML = '<div class="info">Testing login API...</div>';
+            log('Testing login API endpoint...');
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: 'admin@example.com',
+                        password: 'admin123'
+                    })
+                });
+
+                log(`Response status: ${response.status} ${response.statusText}`);
+                log(`Response headers: ${JSON.stringify(Object.fromEntries(response.headers.entries()))}`);
+                
+                const data = await response.json();
+                log(`Response data structure: success=${data.success}, has data=${!!data.data}`);
+                
+                if (response.ok && data.success) {
+                    resultsDiv.innerHTML = `
+                        <div class="success">
+                            ✅ Login API successful!
+                            <div class="response-data">
+Success: ${data.success}
+Has user: ${!!data.data?.user}
+Has token: ${!!data.data?.token}
+User name: ${data.data?.user?.name}
+User role: ${data.data?.user?.role}
+Token preview: ${data.data?.token?.substring(0, 30)}...
+                            </div>
+                        </div>
+                    `;
+                    log('✅ Login API working correctly', 'success');
+                } else {
+                    resultsDiv.innerHTML = `
+                        <div class="error">
+                            ❌ Login API failed
+                            <div class="response-data">${JSON.stringify(data, null, 2)}</div>
+                        </div>
+                    `;
+                    log(`❌ Login API failed: ${data.message || 'Unknown error'}`, 'error');
+                }
+                
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        ❌ Network error: ${error.message}
+                    </div>
+                `;
+                log(`❌ Network error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testLoginAPIRaw() {
+            const resultsDiv = document.getElementById('api-test-results');
+            resultsDiv.innerHTML = '<div class="info">Testing login API (raw response)...</div>';
+            log('Testing login API with raw response analysis...');
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: 'admin@example.com',
+                        password: 'admin123'
+                    })
+                });
+
+                const rawText = await response.text();
+                log(`Raw response text: ${rawText.substring(0, 500)}...`);
+                
+                // Try to parse as JSON
+                try {
+                    const data = JSON.parse(rawText);
+                    log(`JSON parsing successful`);
+                    log(`Response structure: ${Object.keys(data).join(', ')}`);
+                    if (data.data) {
+                        log(`Data structure: ${Object.keys(data.data).join(', ')}`);
+                    }
+                    
+                    resultsDiv.innerHTML = `
+                        <div class="success">
+                            ✅ Raw response analysis complete
+                            <div class="response-data">${JSON.stringify(data, null, 2)}</div>
+                        </div>
+                    `;
+                } catch (parseError) {
+                    log(`❌ JSON parsing failed: ${parseError.message}`, 'error');
+                    resultsDiv.innerHTML = `
+                        <div class="error">
+                            ❌ Invalid JSON response: ${rawText.substring(0, 200)}
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                log(`❌ Network error: ${error.message}`, 'error');
+                resultsDiv.innerHTML = `<div class="error">❌ Network error: ${error.message}</div>`;
+            }
+        }
+
+        function startNetworkMonitoring() {
+            networkMonitorActive = true;
+            log('Network monitoring started', 'success');
+            
+            // Override fetch to monitor requests
+            const originalFetch = window.fetch;
+            window.fetch = async function(...args) {
+                if (!networkMonitorActive) return originalFetch.apply(this, args);
+                
+                const [url, options = {}] = args;
+                const method = options.method || 'GET';
+                const headers = options.headers || {};
+                
+                log(`🌐 ${method} ${url}`);
+                
+                try {
+                    const response = await originalFetch.apply(this, args);
+                    const logEntry = `
+                        <div class="network-request">
+                            ✅ ${method} ${url} - ${response.status} ${response.statusText}
+                        </div>
+                    `;
+                    document.getElementById('network-log').innerHTML += logEntry;
+                    
+                    // Log response for auth requests
+                    if (url.includes('/auth/login')) {
+                        try {
+                            const clone = response.clone();
+                            const data = await clone.json();
+                            log(`Login response: success=${data.success}, has token=${!!data.data?.token}`);
+                        } catch (e) {
+                            log(`Login response: Could not parse JSON`);
+                        }
+                    }
+                    
+                    return response;
+                } catch (error) {
+                    const errorEntry = `
+                        <div class="network-error">
+                            ❌ ${method} ${url} - Error: ${error.message}
+                        </div>
+                    `;
+                    document.getElementById('network-log').innerHTML += errorEntry;
+                    log(`Network request failed: ${error.message}`, 'error');
+                    throw error;
+                }
+            };
+        }
+
+        function stopNetworkMonitoring() {
+            networkMonitorActive = false;
+            log('Network monitoring stopped', 'info');
+        }
+
+        function clearNetworkLog() {
+            document.getElementById('network-log').innerHTML = '';
+            log('Network log cleared');
+        }
+
+        function loadLoginPage() {
+            const frame = document.getElementById('login-frame');
+            const resultsDiv = document.getElementById('frontend-test-results');
+            
+            resultsDiv.innerHTML = `
+                <div class="info">
+                    Loading login page in iframe...<br>
+                    <strong>Instructions:</strong>
+                    <ol>
+                        <li>Login with: admin@example.com / admin123</li>
+                        <li>Watch for any error messages</li>
+                        <li>Check the network log above for failed requests</li>
+                        <li>Report what you see in the iframe</li>
+                    </ol>
+                </div>
+            `;
+            
+            frame.style.display = 'block';
+            frame.src = `${API_BASE}/login`;
+            
+            log('Loaded real login page in iframe');
+        }
+
+        function testLocalStorage() {
+            const resultsDiv = document.getElementById('frontend-test-results');
+            
+            try {
+                // Test localStorage functionality
+                const testKey = 'test-auth-' + Date.now();
+                const testValue = 'test-value-' + Date.now();
+                
+                localStorage.setItem(testKey, testValue);
+                const retrieved = localStorage.getItem(testKey);
+                localStorage.removeItem(testKey);
+                
+                if (retrieved === testValue) {
+                    resultsDiv.innerHTML += '<div class="success">✅ localStorage working correctly</div>';
+                    log('localStorage test passed', 'success');
+                } else {
+                    resultsDiv.innerHTML += '<div class="error">❌ localStorage not working</div>';
+                    log('localStorage test failed', 'error');
+                }
+                
+            } catch (error) {
+                resultsDiv.innerHTML += `<div class="error">❌ localStorage error: ${error.message}</div>`;
+                log(`localStorage error: ${error.message}`, 'error');
+            }
+        }
+
+        async function simulateFrontendLogin() {
+            const resultsDiv = document.getElementById('frontend-test-results');
+            resultsDiv.innerHTML = '<div class="info">Simulating frontend login process...</div>';
+            log('Simulating frontend login process...');
+            
+            try {
+                // Simulate the authStore login method
+                log('Step 1: Calling login API...');
+                const response = await fetch(`${API_BASE}/api/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: 'admin@example.com',
+                        password: 'admin123'
+                    })
+                });
+
+                const data = await response.json();
+                log(`Step 2: API response received - success: ${data.success}`);
+                
+                if (response.ok && data.success) {
+                    log('Step 3: Processing response data...');
+                    
+                    // Check the response structure like the authStore does
+                    const token = data.data?.token;
+                    const user = data.data?.user;
+                    
+                    log(`Token found: ${!!token}`);
+                    log(`User found: ${!!user}`);
+                    
+                    if (token && user) {
+                        log('✅ Response validation successful', 'success');
+                        
+                        // Simulate storing in localStorage
+                        localStorage.setItem('token', token);
+                        localStorage.setItem('user', JSON.stringify(user));
+                        
+                        resultsDiv.innerHTML += `
+                            <div class="success">
+                                ✅ Frontend login simulation successful!
+                                <br>Token stored: ${token.substring(0, 30)}...
+                                <br>User: ${user.name} (${user.role})
+                            </div>
+                        `;
+                        
+                        log('✅ Frontend login process completed successfully', 'success');
+                    } else {
+                        log('❌ Response validation failed - missing token or user', 'error');
+                        resultsDiv.innerHTML += `
+                            <div class="error">
+                                ❌ Response validation failed
+                                <br>Expected: data.data.token and data.data.user
+                                <br>Found: token=${!!token}, user=${!!user}
+                            </div>
+                        `;
+                    }
+                } else {
+                    log(`❌ Login API failed: ${data.message}`, 'error');
+                    resultsDiv.innerHTML += `<div class="error">❌ Login API failed: ${data.message}</div>`;
+                }
+                
+            } catch (error) {
+                log(`❌ Frontend simulation error: ${error.message}`, 'error');
+                resultsDiv.innerHTML += `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        async function analyzeResponseStructure() {
+            const resultsDiv = document.getElementById('analysis-results');
+            resultsDiv.innerHTML = '<div class="info">Analyzing response structure...</div>';
+            log('Analyzing login response structure...');
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: 'admin@example.com',
+                        password: 'admin123'
+                    })
+                });
+
+                const data = await response.json();
+                
+                // Analyze the response structure
+                const analysis = {
+                    hasSuccess: 'success' in data,
+                    hasData: 'data' in data,
+                    dataType: typeof data.data,
+                    dataKeys: data.data ? Object.keys(data.data) : [],
+                    hasUser: data.data && 'user' in data.data,
+                    hasToken: data.data && 'token' in data.data,
+                    hasSites: data.data && 'sites' in data.data
+                };
+                
+                resultsDiv.innerHTML = `
+                    <div class="success">
+                        <h4>Response Structure Analysis:</h4>
+                        <ul>
+                            <li>Has success field: ${analysis.hasSuccess}</li>
+                            <li>Has data field: ${analysis.hasData}</li>
+                            <li>Data type: ${analysis.dataType}</li>
+                            <li>Data keys: ${analysis.dataKeys.join(', ')}</li>
+                            <li>Has user: ${analysis.hasUser}</li>
+                            <li>Has token: ${analysis.hasToken}</li>
+                            <li>Has sites: ${analysis.hasSites}</li>
+                        </ul>
+                    </div>
+                `;
+                
+                if (analysis.hasUser && analysis.hasToken) {
+                    log('✅ Response structure is correct for frontend consumption', 'success');
+                } else {
+                    log('❌ Response structure issue - missing expected fields', 'error');
+                }
+                
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="error">❌ Analysis error: ${error.message}</div>`;
+                log(`❌ Analysis error: ${error.message}`, 'error');
+            }
+        }
+
+        function testResponseParsing() {
+            const resultsDiv = document.getElementById('analysis-results');
+            resultsDiv.innerHTML = '<div class="info">Testing response parsing logic...</div>';
+            log('Testing response parsing logic...');
+            
+            // Simulate the parsing logic from authStore
+            const mockResponse = {
+                success: true,
+                data: {
+                    user: { id: 1, name: 'Test User', role: 'admin' },
+                    token: 'mock-jwt-token-' + Date.now(),
+                    sites: []
+                }
+            };
+            
+            try {
+                // This is the logic from the authStore
+                const token = mockResponse.data?.token;
+                const user = mockResponse.data?.user;
+                
+                log(`Mock response parsing:`);
+                log(`Token: ${token ? 'FOUND' : 'NOT FOUND'}`);
+                log(`User: ${user ? 'FOUND' : 'NOT FOUND'}`);
+                
+                if (token && user) {
+                    resultsDiv.innerHTML = `
+                        <div class="success">
+                            ✅ Response parsing logic works correctly
+                            <br>Token: ${token.substring(0, 20)}...
+                            <br>User: ${user.name} (${user.role})
+                        </div>
+                    `;
+                    log('✅ Response parsing logic is correct', 'success');
+                } else {
+                    resultsDiv.innerHTML = `
+                        <div class="error">
+                            ❌ Response parsing failed
+                            <br>Expected: data.data.token and data.data.user
+                            <br>Result: token=${!!token}, user=${!!user}
+                        </div>
+                    `;
+                    log('❌ Response parsing logic has issues', 'error');
+                }
+                
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="error">❌ Parsing error: ${error.message}</div>`;
+                log(`❌ Parsing error: ${error.message}`, 'error');
+            }
+        }
+
+        // Auto-start basic analysis on page load
+        window.addEventListener('load', () => {
+            log('Debug page loaded - ready to analyze login error', 'info');
+        });
+    </script>
+</body>
+</html>

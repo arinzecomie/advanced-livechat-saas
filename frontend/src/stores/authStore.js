@@ -59,10 +59,14 @@ const useAuthStore = create(
 
         const data = await response.json()
         
+        // Extract token and user from the response data
+        const token = data.data?.token
+        const user = data.data?.user
+        
         // Ensure token and user are properly set before returning success
-        if (data.token && data.user) {
-          setToken(data.token)
-          setUser(data.user)
+        if (token && user) {
+          setToken(token)
+          setUser(user)
           
           // Verify that authentication state is properly updated
           const state = get()
@@ -70,9 +74,9 @@ const useAuthStore = create(
             throw new Error('Authentication state not properly updated')
           }
           
-          return { success: true, data }
+          return { success: true, data: data.data }
         } else {
-          throw new Error('Invalid response from server')
+          throw new Error('Invalid response from server: missing token or user data')
         }
         
       } catch (error) {
