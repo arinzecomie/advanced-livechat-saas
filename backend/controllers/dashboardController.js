@@ -37,6 +37,12 @@ export async function getDashboard(req, res, next) {
       
       if (sites.length === 0) {
         console.log('⚠️  No sites found for user, returning empty array');
+        // Set cache headers to prevent caching of empty responses
+        res.set({
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        });
         return res.json({
           success: true,
           data: {
@@ -85,6 +91,16 @@ export async function getDashboard(req, res, next) {
       );
 
       console.log('✅ Dashboard data prepared successfully');
+      
+      // Set cache headers to prevent caching of dynamic dashboard data
+      res.set({
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+        'ETag': null, // Remove ETag to prevent 304 responses
+        'Last-Modified': null // Remove Last-Modified to prevent 304 responses
+      });
+      
       res.json({
         success: true,
         data: {
@@ -93,6 +109,12 @@ export async function getDashboard(req, res, next) {
       });
     } catch (dbError) {
       console.error('💥 Database error in dashboard:', dbError.message);
+      // Set cache headers for error response too
+      res.set({
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      });
       // Return empty sites array as fallback
       res.json({
         success: true,
@@ -104,6 +126,12 @@ export async function getDashboard(req, res, next) {
   } catch (error) {
     console.error('💥 Dashboard controller error:', error.message);
     console.error(error.stack);
+    // Set cache headers for error response too
+    res.set({
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    });
     // Return empty data as fallback instead of error
     res.json({
       success: true,
@@ -131,6 +159,15 @@ export async function getSiteAnalytics(req, res, next) {
     // Get subscription status
     const subscription = await paymentService.getSubscriptionStatus(siteId);
 
+    // Set cache headers to prevent caching of dynamic analytics data
+    res.set({
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0',
+      'ETag': null,
+      'Last-Modified': null
+    });
+    
     res.json({
       success: true,
       data: {
@@ -166,6 +203,15 @@ export async function getSiteVisitors(req, res, next) {
     const visitors = await visitorModel.getRecentVisitors(site.id, page, limit);
     const totalCount = await visitorModel.getVisitorCount(site.id);
     
+    // Set cache headers to prevent caching of visitor data
+    res.set({
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0',
+      'ETag': null,
+      'Last-Modified': null
+    });
+    
     res.json({
       success: true,
       data: {
@@ -195,6 +241,15 @@ export async function getChatConversations(req, res, next) {
     // Get last message for each session
     const conversations = await messageModel.getLastMessages(siteId, 20);
     
+    // Set cache headers to prevent caching of chat data
+    res.set({
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0',
+      'ETag': null,
+      'Last-Modified': null
+    });
+    
     res.json({
       success: true,
       data: {
@@ -214,6 +269,15 @@ export async function getChatMessages(req, res, next) {
     const site = req.site;
     
     const messages = await messageModel.getSessionMessages(siteId, sessionId);
+    
+    // Set cache headers to prevent caching of message data
+    res.set({
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0',
+      'ETag': null,
+      'Last-Modified': null
+    });
     
     res.json({
       success: true,
@@ -238,6 +302,15 @@ export async function createPayment(req, res, next) {
       days || 30
     );
     
+    // Set cache headers to prevent caching of payment data
+    res.set({
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0',
+      'ETag': null,
+      'Last-Modified': null
+    });
+    
     res.json({
       success: true,
       data: { payment }
@@ -254,6 +327,15 @@ export async function getPaymentHistory(req, res, next) {
     const site = req.site;
     
     const payments = await paymentService.getSitePayments(siteId);
+    
+    // Set cache headers to prevent caching of payment history
+    res.set({
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0',
+      'ETag': null,
+      'Last-Modified': null
+    });
     
     res.json({
       success: true,
